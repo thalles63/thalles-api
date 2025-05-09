@@ -1,7 +1,7 @@
 import express from "express";
 
 const app = express();
-const port = 3000;
+const PORT = process.env.PORT ?? 3000;
 
 app.use(express.json());
 
@@ -13,8 +13,8 @@ app.get("/ping", (req, res) => {
     res.send();
 });
 
-app.listen(port, () => {
-    console.log(`Servidor rodando em http://localhost:${port}`);
+app.listen(PORT, () => {
+    console.log(`Servidor rodando em http://localhost:${PORT}`);
 });
 
 // // const express = require("express");
