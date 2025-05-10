@@ -1,8 +1,8 @@
 import { Router } from "express";
-import { ping } from "../controllers/ping.controller";
+import gameRoutes from "./api/game.routes";
 
 const router = Router();
 
-router.get("/", ping);
+router.use("/game", gameRoutes);
 
 export default router;
