@@ -6,6 +6,9 @@ export class Game {
     @PrimaryGeneratedColumn("uuid")
     id: string;
 
+    @Column({ default: "" })
+    externalGameId: string;
+
     @Column()
     name: string;
 
@@ -26,6 +29,9 @@ export class Game {
 
     @Column({ default: false })
     isCampaignComplete: boolean;
+
+    @Column({ nullable: true })
+    screenshot: string;
 
     @Column()
     rating: number;
