@@ -1,4 +1,5 @@
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Achievements } from "./achievements.entity";
 
 @Entity("games")
 export class Game {
@@ -28,6 +29,9 @@ export class Game {
 
     @Column()
     rating: number;
+
+    @OneToMany(() => Achievements, (achievement) => achievement.game)
+    achievements: Achievements[];
 
     @CreateDateColumn()
     createdAt: Date;

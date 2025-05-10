@@ -22,7 +22,7 @@ export class GameService {
     }
 
     async getGameById(id: string): Promise<Game | null> {
-        return this.gameRepository.findOneBy({ id });
+        return await this.gameRepository.findOneBy({ id });
     }
 
     // async createGame(gameData: Partial<Game>): Promise<Game> {
