@@ -15,6 +15,9 @@ export class Achievements {
     @Column({ nullable: true })
     image: string;
 
+    @Column({ nullable: true })
+    classification: number;
+
     @Column({ type: "decimal", precision: 5, scale: 2, default: 0 })
     percentageAchieved: number;
 

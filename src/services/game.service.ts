@@ -28,32 +28,22 @@ export class GameService {
         return await this.gameRepository.findOneBy({ id });
     }
 
-    async save(gameName: string): Promise<Game> {
+    async save(game: Partial<Game>) {
         try {
-            const igdbGame = await this.igdbService.searchGameByName(gameName);
+            const igdbGame = await this.igdbService.searchGameByExternalId(game.externalGameId!);
 
             if (!igdbGame) {
-                throw new Error(`Game "${gameName}" not found in IGDB`);
-            }
-
-            const existingGame = await this.gameRepository.findOne({
-                where: { externalGameId: igdbGame.id }
-            });
-
-            if (existingGame) {
-                return existingGame;
+                return;
             }
 
             const newGame = this.gameRepository.create({
                 name: igdbGame.name,
                 image: igdbGame.image,
-                externalGameId: igdbGame.id,
                 screenshot: igdbGame.screenshot,
-                platform: 1,
+                externalGameId: game.externalGameId,
+                platform: game.platform,
                 rating: 0,
-                timePlayed: 0,
-                isPlatinumed: false,
-                isCampaignComplete: false
+                timePlayed: game.timePlayed
             });
 
             return await this.gameRepository.save(newGame);

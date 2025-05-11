@@ -1,11 +1,14 @@
 import { Request, Response } from "express";
 import { GameService } from "../services/game.service";
+import { PlayStationService } from "../services/playstation.service";
 
 export class GameController {
     private readonly gameService: GameService;
+    private readonly playstationService: PlayStationService;
 
     constructor() {
         this.gameService = new GameService();
+        this.playstationService = new PlayStationService();
     }
 
     async list(req: Request, res: Response): Promise<void> {
@@ -59,23 +62,19 @@ export class GameController {
         }
     }
 
-    async save(req: Request, res: Response): Promise<void> {
+    async syncPsnGames(req: Request, res: Response): Promise<void> {
         try {
-            const { name } = req.body;
+            const gamesAlreadyOnApi = new Set((await this.gameService.list(1, 300)).games.map((game) => game.externalGameId));
+            const gamesFromPsn = await this.playstationService.getUserGames();
+            const newGamesToRegister = gamesFromPsn.filter((item) => !gamesAlreadyOnApi.has(item.externalGameId ?? ""));
 
-            if (!name) {
-                res.status(400).json({
-                    status: "error",
-                    message: "Game name is required"
-                });
-                return;
+            for (const game of newGamesToRegister) {
+                await this.gameService.save(game);
             }
 
-            const game = await this.gameService.save(name);
-
-            res.status(201).json({
+            res.json({
                 status: "success",
-                data: game
+                data: newGamesToRegister
             });
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : "Unknown error";
