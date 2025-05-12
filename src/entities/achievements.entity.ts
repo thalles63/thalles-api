@@ -2,9 +2,12 @@ import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "t
 import { Game } from "./games.entity";
 
 @Entity("achievements")
-export class Achievements {
+export class Achievement {
     @PrimaryGeneratedColumn("uuid")
     id: string;
+
+    @Column()
+    platformId: string;
 
     @Column()
     name: string;
@@ -13,13 +16,22 @@ export class Achievements {
     description: string;
 
     @Column({ nullable: true })
-    image: string;
+    type: string;
 
     @Column({ nullable: true })
-    classification: number;
+    image: string;
+
+    @Column({ default: false })
+    isAchieved: boolean;
+
+    @Column({ nullable: true })
+    dateAchieved: Date;
 
     @Column({ type: "decimal", precision: 5, scale: 2, default: 0 })
     percentageAchieved: number;
+
+    @Column()
+    gameId: string;
 
     @ManyToOne(() => Game, (game) => game.achievements)
     @JoinColumn({ name: "gameId" })

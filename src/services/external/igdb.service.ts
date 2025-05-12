@@ -1,6 +1,6 @@
 import axios from "axios";
-import { igdbConfig } from "../config/igdb.config";
-import { Game } from "../entities/games.entity";
+import { config } from "../../config/app.config";
+import { Game } from "../../entities/games.entity";
 
 export class IgdbService {
     private accessToken: string | null = null;
@@ -13,7 +13,7 @@ export class IgdbService {
 
         try {
             const response: any = await axios.post(
-                `https://id.twitch.tv/oauth2/token?client_id=${igdbConfig.clientId}&client_secret=${igdbConfig.clientSecret}&grant_type=client_credentials`
+                `https://id.twitch.tv/oauth2/token?client_id=${config.igdb.clientId}&client_secret=${config.igdb.clientSecret}&grant_type=client_credentials`
             );
 
             this.accessToken = response.data.access_token;
@@ -37,7 +37,7 @@ export class IgdbService {
                 limit 1;`,
                 {
                     headers: {
-                        "Client-ID": igdbConfig.clientId,
+                        "Client-ID": config.igdb.clientId,
                         Authorization: `Bearer ${token}`,
                         "Content-Type": "text/plain"
                     }
@@ -56,7 +56,7 @@ export class IgdbService {
                 limit 1;`,
                 {
                     headers: {
-                        "Client-ID": igdbConfig.clientId,
+                        "Client-ID": config.igdb.clientId,
                         Authorization: `Bearer ${token}`,
                         "Content-Type": "text/plain"
                     }
@@ -68,9 +68,7 @@ export class IgdbService {
             return {
                 name: game.name,
                 image: game.cover?.url ? `https:${game.cover.url.replace("t_thumb", "t_cover_big_2x")}` : "",
-                screenshot: `https:${game.screenshots[0].url.replace("t_thumb", "t_1080p_2x")}`,
-                id: game.id,
-                externalGameId: gameId
+                screenshot: `https:${game.screenshots[0].url.replace("t_thumb", "t_1080p_2x")}`
             };
         } catch (error) {
             console.error("Error searching game in IGDB:", error);

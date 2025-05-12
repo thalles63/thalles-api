@@ -8,8 +8,14 @@ export const config = {
         env: process.env.NODE_ENV ?? "DEV"
     },
     psn: {
-        npsso: process.env.PSN_NPSSO
+        npssoToken: process.env.NPSSO_TOKEN,
+        accountId: process.env.ACCOUNT_ID
     },
+    igdb: {
+        clientId: process.env.IGDB_CLIENT_ID,
+        clientSecret: process.env.IGDB_CLIENT_SECRET
+    },
+
     logging: {
         level: process.env.LOG_LEVEL ?? "info"
     }

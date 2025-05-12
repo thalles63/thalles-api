@@ -1,4 +1,5 @@
 export enum PlatformEnum {
     Pc = 1,
-    Playstation = 2
+    Playstation5 = 2,
+    Playstation4 = 3
 }

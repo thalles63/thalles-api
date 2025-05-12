@@ -1,13 +1,16 @@
-import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
-import { Achievements } from "./achievements.entity";
+import { Column, CreateDateColumn, DeleteDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Achievement } from "./achievements.entity";
 
 @Entity("games")
 export class Game {
     @PrimaryGeneratedColumn("uuid")
     id: string;
 
-    @Column({ default: "" })
-    externalGameId: string;
+    @Column()
+    igdbId: string;
+
+    @Column()
+    platformId: string;
 
     @Column()
     name: string;
@@ -36,8 +39,11 @@ export class Game {
     @Column()
     rating: number;
 
-    @OneToMany(() => Achievements, (achievement) => achievement.game)
-    achievements: Achievements[];
+    @OneToMany(() => Achievement, (achievement) => achievement.game)
+    achievements: Achievement[];
+
+    @DeleteDateColumn()
+    deletedAt: Date;
 
     @CreateDateColumn()
     createdAt: Date;
