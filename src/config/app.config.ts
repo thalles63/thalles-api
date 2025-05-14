@@ -11,6 +11,10 @@ export const config = {
         npssoToken: process.env.NPSSO_TOKEN,
         accountId: process.env.ACCOUNT_ID
     },
+    xbox: {
+        username: process.env.XBOX_USERNAME,
+        password: process.env.XBOX_PASSWORD
+    },
     igdb: {
         clientId: process.env.IGDB_CLIENT_ID,
         clientSecret: process.env.IGDB_CLIENT_SECRET

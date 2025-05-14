@@ -30,21 +30,28 @@ export class GameService {
         return await this.gameRepository.findOneBy({ id });
     }
 
-    async saveFromWeb(game: Partial<Game>) {
+    async saveFromWeb(game: Partial<Game>, skipIgdb = false) {
         try {
-            const igdbGame = await this.igdbService.searchGameByExternalId(game.igdbId!);
+            let igdbGame: Partial<Game> | null = {};
 
-            if (!igdbGame) {
-                return;
+            if (!skipIgdb) {
+                igdbGame = await this.igdbService.searchGameByExternalId(game.igdbId!);
+
+                if (!igdbGame) {
+                    return;
+                }
             }
 
             const newGame = this.gameRepository.create({
-                name: igdbGame.name,
-                image: igdbGame.image,
-                screenshot: igdbGame.screenshot,
+                name: game.name,
+                image: igdbGame.image ?? "",
+                screenshot: igdbGame.screenshot ?? "",
                 igdbId: game.igdbId,
                 platformId: game.platformId,
                 platform: game.platform,
+                dateCompleted: game.dateCompleted,
+                isPlatinumed: game.isPlatinumed || false,
+                isCampaignComplete: game.isCampaignComplete || false,
                 rating: 0,
                 timePlayed: game.timePlayed
             });

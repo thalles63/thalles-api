@@ -24,6 +24,7 @@
         "@logtail/node": "^0.5.4",
         "@twurple/api": "^7.3.0",
         "@types/axios": "^0.9.36",
+        "@xboxreplay/xboxlive-auth": "^4.1.0",
         "axios": "^1.9.0",
         "dotenv": "^16.4.1",
         "express": "^5.1.0",

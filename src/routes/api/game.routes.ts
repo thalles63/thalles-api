@@ -5,6 +5,7 @@ import { FindByIdGameController } from "../../controllers/game/find-by-id.contro
 import { ListGameController } from "../../controllers/game/list.controller";
 import { SaveGameController } from "../../controllers/game/save.controller";
 import { SyncPsnGameController } from "../../controllers/game/sync-psn.controller";
+import { SyncXboxGameController } from "../../controllers/game/sync-xbox.controller";
 
 const router = Router();
 
@@ -14,5 +15,6 @@ router.post("/", (req, res) => new SaveGameController().save(req, res));
 router.put("/:id", (req, res) => new EditGameController().edit(req, res));
 router.delete("/:id", (req, res) => new DeleteGameController().delete(req, res));
 router.post("/sync-playstation", (req, res) => new SyncPsnGameController().syncPsn(req, res));
+router.post("/sync-xbox", (req, res) => new SyncXboxGameController().syncXbox(req, res));
 
 export default router;

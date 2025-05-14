@@ -4,14 +4,17 @@ import { Achievement } from "../entities/achievements.entity";
 import { Game } from "../entities/games.entity";
 import { NotFoundError } from "../utils/errors/errors";
 import { PlayStationService } from "./external/playstation.service";
+import { XboxService } from "./external/xbox.service";
 
 export class AchievementService {
     private readonly achievementRepository: Repository<Achievement>;
     private readonly playstationService: PlayStationService;
+    private readonly xboxService: XboxService;
 
     constructor() {
         this.achievementRepository = appDataSource.getRepository(Achievement);
         this.playstationService = new PlayStationService();
+        this.xboxService = new XboxService();
     }
 
     async saveFromPsn(game: Partial<Game>) {
@@ -30,6 +33,33 @@ export class AchievementService {
                     isAchieved: false,
                     percentageAchieved: 0
                 });
+                achievementsList.push(newAchievement);
+            }
+
+            return await this.achievementRepository.save(achievementsList);
+        } catch (error) {
+            throw new Error(`Failed to save achievements: ${error instanceof Error ? error.message : "Unknown error"}`);
+        }
+    }
+
+    async saveFromXbox(game: Partial<Game>) {
+        try {
+            const achievements = await this.xboxService.getListOfAchievements(<Game>game);
+
+            const achievementsList: Achievement[] = [];
+            for (const achievement of achievements) {
+                const newAchievement = this.achievementRepository.create({
+                    gameId: game.id,
+                    platformId: achievement.id,
+                    description: achievement.description,
+                    image: "",
+                    name: achievement.name,
+                    type: achievement.rewards[0].value,
+                    isAchieved: achievement.progressState === "Achieved",
+                    dateAchieved: achievement.progressState === "Achieved" ? achievement.progression.timeUnlocked : undefined,
+                    percentageAchieved: 0
+                });
+
                 achievementsList.push(newAchievement);
             }
 

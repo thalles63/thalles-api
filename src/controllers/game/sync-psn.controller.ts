@@ -3,6 +3,7 @@ import { Game } from "../../entities/games.entity";
 import { AchievementService } from "../../services/achievement.service";
 import { PlayStationService } from "../../services/external/playstation.service";
 import { GameService } from "../../services/game.service";
+import { PlatformEnum } from "../../utils/enums/platform.enum";
 
 export class SyncPsnGameController {
     private readonly gameService: GameService;
@@ -55,7 +56,9 @@ export class SyncPsnGameController {
     }
 
     private async getListOfGameIdsToUpdateAchievements() {
-        return (await this.gameService.list(1, 300)).games.filter((game) => !game.isPlatinumed);
+        return (await this.gameService.list(1, 300)).games.filter(
+            (game) => !game.isPlatinumed && [PlatformEnum.Playstation4, PlatformEnum.Playstation5].includes(game.platform)
+        );
     }
 
     private async getNpCommunicationId(game: Partial<Game>) {
