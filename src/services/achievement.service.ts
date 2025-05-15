@@ -4,17 +4,20 @@ import { Achievement } from "../entities/achievements.entity";
 import { Game } from "../entities/games.entity";
 import { NotFoundError } from "../utils/errors/errors";
 import { PlayStationService } from "./external/playstation.service";
+import { SteamService } from "./external/steam.service";
 import { XboxService } from "./external/xbox.service";
 
 export class AchievementService {
     private readonly achievementRepository: Repository<Achievement>;
     private readonly playstationService: PlayStationService;
     private readonly xboxService: XboxService;
+    private readonly steamService: SteamService;
 
     constructor() {
         this.achievementRepository = appDataSource.getRepository(Achievement);
         this.playstationService = new PlayStationService();
         this.xboxService = new XboxService();
+        this.steamService = new SteamService();
     }
 
     async saveFromPsn(game: Partial<Game>) {
@@ -57,6 +60,33 @@ export class AchievementService {
                     type: achievement.rewards[0].value,
                     isAchieved: achievement.progressState === "Achieved",
                     dateAchieved: achievement.progressState === "Achieved" ? achievement.progression.timeUnlocked : undefined,
+                    percentageAchieved: 0
+                });
+
+                achievementsList.push(newAchievement);
+            }
+
+            return await this.achievementRepository.save(achievementsList);
+        } catch (error) {
+            throw new Error(`Failed to save achievements: ${error instanceof Error ? error.message : "Unknown error"}`);
+        }
+    }
+
+    async saveFromSteam(game: Partial<Game>) {
+        try {
+            const achievements = await this.steamService.getListOfAchievements(<Game>game);
+
+            const achievementsList: Achievement[] = [];
+            for (const achievement of achievements) {
+                const newAchievement = this.achievementRepository.create({
+                    gameId: game.id,
+                    platformId: achievement.platformId,
+                    description: achievement.description,
+                    image: achievement.image,
+                    name: achievement.name,
+                    type: "0",
+                    isAchieved: false,
+                    dateAchieved: undefined,
                     percentageAchieved: 0
                 });
 

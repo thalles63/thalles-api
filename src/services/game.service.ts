@@ -13,8 +13,9 @@ export class GameService {
         this.igdbService = new IgdbService();
     }
 
-    async list(page: number = 1, limit: number = 10, includeDeleted: boolean = false): Promise<{ games: Game[]; total: number }> {
+    async list(page: number = 1, limit: number = 10, where: any = {}, includeDeleted: boolean = false): Promise<{ games: Game[]; total: number }> {
         const [games, total] = await this.gameRepository.findAndCount({
+            where,
             skip: (page - 1) * limit,
             take: limit,
             order: {
@@ -53,7 +54,7 @@ export class GameService {
                 isPlatinumed: game.isPlatinumed || false,
                 isCampaignComplete: game.isCampaignComplete || false,
                 rating: 0,
-                timePlayed: game.timePlayed
+                timePlayed: game.timePlayed ?? 0
             });
 
             return await this.gameRepository.save(newGame);

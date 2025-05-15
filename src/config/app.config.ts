@@ -15,6 +15,10 @@ export const config = {
         username: process.env.XBOX_USERNAME,
         password: process.env.XBOX_PASSWORD
     },
+    steam: {
+        apiKey: process.env.STEAM_API_KEY,
+        steamId: process.env.STEAM_ID
+    },
     igdb: {
         clientId: process.env.IGDB_CLIENT_ID,
         clientSecret: process.env.IGDB_CLIENT_SECRET

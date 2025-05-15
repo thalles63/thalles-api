@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import { In } from "typeorm";
 import { Game } from "../../entities/games.entity";
 import { AchievementService } from "../../services/achievement.service";
 import { PlayStationService } from "../../services/external/playstation.service";
@@ -52,13 +53,13 @@ export class SyncPsnGameController {
     }
 
     private async getIdsOfGamesSavedInApi() {
-        return (await this.gameService.list(1, 300, true)).games.map((game) => game.igdbId);
+        return (await this.gameService.list(1, 300, { platform: In([PlatformEnum.Playstation4, PlatformEnum.Playstation5]) }, true)).games.map(
+            (game) => game.igdbId
+        );
     }
 
     private async getListOfGameIdsToUpdateAchievements() {
-        return (await this.gameService.list(1, 300)).games.filter(
-            (game) => !game.isPlatinumed && [PlatformEnum.Playstation4, PlatformEnum.Playstation5].includes(game.platform)
-        );
+        return (await this.gameService.list(1, 300, { isPlatinumed: false, platform: In([PlatformEnum.Playstation4, PlatformEnum.Playstation5]) })).games;
     }
 
     private async getNpCommunicationId(game: Partial<Game>) {

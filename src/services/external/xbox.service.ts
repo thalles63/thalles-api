@@ -55,7 +55,7 @@ export class XboxService {
                     timePlayed: 0,
                     isPlatinumed: game.currentGamerscore >= 1000,
                     isCampaignComplete: game.currentGamerscore >= 1000,
-                    dateCompleted: game.lastUnlock
+                    dateCompleted: game.currentGamerscore >= 1000 ? game.lastUnlock : undefined
                 };
             });
         } catch (error) {
@@ -129,14 +129,5 @@ export class XboxService {
             console.error("Error getting Xbox Live token:", error);
             throw new Error("Failed to get Xbox Live token");
         }
-    }
-
-    private parsePlayDuration(duration: string): number {
-        // Xbox returns duration in ISO 8601 format (e.g., "PT1H30M")
-        const match = duration.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
-        if (!match) return 0;
-
-        const [, hours, minutes, seconds] = match;
-        return parseInt(hours || "0") * 3600 + parseInt(minutes || "0") * 60 + parseInt(seconds || "0");
     }
 }

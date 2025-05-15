@@ -1,52 +1,52 @@
 import { Request, Response } from "express";
 import { Achievement } from "../../entities/achievements.entity";
-import { XboxAchievement } from "../../interfaces/xbox-achievement.interface";
 import { AchievementService } from "../../services/achievement.service";
-import { XboxService } from "../../services/external/xbox.service";
+import { SteamService } from "../../services/external/steam.service";
 import { GameService } from "../../services/game.service";
 import { PlatformEnum } from "../../utils/enums/platform.enum";
 
-export class SyncXboxGameController {
+export class SyncSteamGameController {
     private readonly gameService: GameService;
-    private readonly xboxService: XboxService;
+    private readonly steamService: SteamService;
     private readonly achievementsService: AchievementService;
 
     constructor() {
         this.gameService = new GameService();
-        this.xboxService = new XboxService();
+        this.steamService = new SteamService();
         this.achievementsService = new AchievementService();
     }
 
-    async syncXbox(req: Request, res: Response): Promise<void> {
+    async syncSteam(req: Request, res: Response): Promise<void> {
         const gamesSavedInApiIds = await this.getIdsOfGamesSavedInApi();
-        const gamesFromXboxLiveApi = await this.xboxService.getUserGames();
-        const newGames = gamesFromXboxLiveApi.filter((item) => !gamesSavedInApiIds.includes(item.platformId ?? ""));
+        const gamesFromSteam = await this.steamService.getUserGames();
+        const newGames = gamesFromSteam.filter((item) => !gamesSavedInApiIds.includes(item.platformId?.toString() ?? ""));
 
         for (const game of newGames) {
-            const savedGame = await this.gameService.saveFromWeb(game, true);
-
-            await this.achievementsService.saveFromXbox(savedGame!);
+            const savedGame = await this.gameService.saveFromWeb(game);
+            if (savedGame) {
+                await this.achievementsService.saveFromSteam(savedGame);
+            }
         }
 
         const gamesToUpdateAchievements = await this.getListOfGameIdsToUpdateAchievements();
 
         for (const game of gamesToUpdateAchievements) {
-            const achievements = (await this.xboxService.getListOfAchievements(game))
-                .filter((a) => a.progressState === "Achieved")
-                .map((a: XboxAchievement) => {
+            const achievements = (await this.steamService.getListOfAchievementsEarnedByGame(game))
+                .filter((a) => a.isAchieved)
+                .map((a) => {
                     return <Partial<Achievement>>{
                         isAchieved: true,
-                        dateAchieved: a.progression.timeUnlocked,
-                        platformId: a.id,
-                        type: a.rewards[0].value
+                        dateAchieved: new Date(Number(a.dateAchieved) * 1000),
+                        platformId: a.platformId
                     };
                 });
 
             await this.achievementsService.updateAchievements(achievements, game.id);
 
-            const is1000g = achievements.reduce((sum, item) => sum + Number(item.type), 0) >= 1000;
+            const allAchievements = await this.steamService.getListOfAchievementsEarnedByGame(game);
+            const is100Percent = allAchievements.every((a) => a.isAchieved);
 
-            if (is1000g) {
+            if (is100Percent) {
                 const mostRecent = achievements.reduce((newer: any, item: any) => {
                     return new Date(item.dateAchieved) > new Date(newer.dateAchieved) ? item : newer;
                 });
@@ -58,14 +58,15 @@ export class SyncXboxGameController {
             }
         }
 
-        res.json(newGames);
+        res.json(gamesToUpdateAchievements);
     }
 
     private async getIdsOfGamesSavedInApi() {
-        return (await this.gameService.list(1, 300, true)).games.map((game) => game.igdbId);
+        const games = await this.gameService.list(1, 300, { platform: PlatformEnum.Steam });
+        return games.games.map((game) => game.platformId?.toString() ?? "");
     }
 
     private async getListOfGameIdsToUpdateAchievements() {
-        return (await this.gameService.list(1, 300)).games.filter((game) => !game.isCampaignComplete && game.platform === PlatformEnum.Xbox);
+        return (await this.gameService.list(1, 300, { isPlatinumed: false, platform: PlatformEnum.Steam })).games;
     }
 }
