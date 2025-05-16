@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { Achievement } from "../../entities/achievements.entity";
+import { Game } from "../../entities/games.entity";
 import { AchievementService } from "../../services/achievement.service";
 import { SteamService } from "../../services/external/steam.service";
 import { GameService } from "../../services/game.service";
@@ -28,10 +29,16 @@ export class SyncSteamGameController {
             }
         }
 
-        const gamesToUpdateAchievements = await this.getListOfGameIdsToUpdateAchievements();
+        const gamesToUpdateAchievements = await this.getListOfGameIdsToUpdateAchievements(gamesFromSteam);
 
         for (const game of gamesToUpdateAchievements) {
-            const achievements = (await this.steamService.getListOfAchievementsEarnedByGame(game))
+            const allAchievements = await this.steamService.getListOfAchievementsEarnedByGame(game);
+
+            if (!allAchievements.length) {
+                continue;
+            }
+
+            const filtererdAchievements = allAchievements
                 .filter((a) => a.isAchieved)
                 .map((a) => {
                     return <Partial<Achievement>>{
@@ -41,21 +48,23 @@ export class SyncSteamGameController {
                     };
                 });
 
-            await this.achievementsService.updateAchievements(achievements, game.id);
+            await this.achievementsService.updateAchievements(filtererdAchievements, game.id);
 
-            const allAchievements = await this.steamService.getListOfAchievementsEarnedByGame(game);
             const is100Percent = allAchievements.every((a) => a.isAchieved);
 
             if (is100Percent) {
-                const mostRecent = achievements.reduce((newer: any, item: any) => {
+                const mostRecent = filtererdAchievements.reduce((newer: any, item: any) => {
                     return new Date(item.dateAchieved) > new Date(newer.dateAchieved) ? item : newer;
                 });
 
                 game.isCampaignComplete = true;
                 game.isPlatinumed = true;
                 game.dateCompleted = mostRecent.dateAchieved!;
-                await this.gameService.edit(game.id, game);
             }
+
+            const gameWithTimePlayed = gamesFromSteam.find((g) => g.platformId === game.platformId);
+            game.timePlayed = gameWithTimePlayed!.timePlayed!;
+            await this.gameService.edit(game.id, game);
         }
 
         res.json(gamesToUpdateAchievements);
@@ -66,7 +75,9 @@ export class SyncSteamGameController {
         return games.games.map((game) => game.platformId?.toString() ?? "");
     }
 
-    private async getListOfGameIdsToUpdateAchievements() {
-        return (await this.gameService.list(1, 300, { isPlatinumed: false, platform: PlatformEnum.Steam })).games;
+    private async getListOfGameIdsToUpdateAchievements(gamesFromSteam: Partial<Game>[]) {
+        const listOfGamesFromApi = (await this.gameService.list(1, 300, { isPlatinumed: false, platform: PlatformEnum.Steam })).games;
+
+        return listOfGamesFromApi.filter((game) => gamesFromSteam.find((g) => g.platformId === game.platformId)!.timePlayed !== game.timePlayed);
     }
 }

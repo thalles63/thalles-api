@@ -54,7 +54,7 @@ export class GameService {
                 isPlatinumed: game.isPlatinumed || false,
                 isCampaignComplete: game.isCampaignComplete || false,
                 rating: 0,
-                timePlayed: game.timePlayed ?? 0
+                timePlayed: 0
             });
 
             return await this.gameRepository.save(newGame);

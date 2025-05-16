@@ -29,7 +29,8 @@ export class PlayStationService {
                     igdbId: game.concept.id.toString(),
                     platformId: game.titleId,
                     platform: game.category === "ps5_native_game" ? PlatformEnum.Playstation5 : PlatformEnum.Playstation4,
-                    timePlayed: this.parsePlayDuration(game.playDuration)
+                    timePlayed: this.parsePlayDuration(game.playDuration),
+                    lastUnlock: game.lastPlayedDateTime
                 };
             });
         } catch (error) {
@@ -77,6 +78,10 @@ export class PlayStationService {
 
     async listAllEarnedByGame(game: Partial<Game>): Promise<Partial<Achievement>[]> {
         try {
+            if (!game.platformId) {
+                return [];
+            }
+
             const accessToken = await this.getPsnAccessToken();
             const { trophies } = await getUserTrophiesEarnedForTitle({ accessToken }, config.psn.accountId!, game.platformId!, "default", {
                 npServiceName: game.platform !== PlatformEnum.Playstation5 ? "trophy" : undefined

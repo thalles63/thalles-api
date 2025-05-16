@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { Achievement } from "../../entities/achievements.entity";
+import { Game } from "../../entities/games.entity";
 import { XboxAchievement } from "../../interfaces/xbox-achievement.interface";
 import { AchievementService } from "../../services/achievement.service";
 import { XboxService } from "../../services/external/xbox.service";
@@ -28,7 +29,7 @@ export class SyncXboxGameController {
             await this.achievementsService.saveFromXbox(savedGame!);
         }
 
-        const gamesToUpdateAchievements = await this.getListOfGameIdsToUpdateAchievements();
+        const gamesToUpdateAchievements = await this.getListOfGameIdsToUpdateAchievements(gamesFromXboxLiveApi);
 
         for (const game of gamesToUpdateAchievements) {
             const achievements = (await this.xboxService.getListOfAchievements(game))
@@ -38,9 +39,13 @@ export class SyncXboxGameController {
                         isAchieved: true,
                         dateAchieved: a.progression.timeUnlocked,
                         platformId: a.id,
-                        type: a.rewards[0].value
+                        type: a.rewards[0]?.value ?? 0
                     };
                 });
+
+            if (!achievements.length) {
+                continue;
+            }
 
             await this.achievementsService.updateAchievements(achievements, game.id);
 
@@ -65,7 +70,11 @@ export class SyncXboxGameController {
         return (await this.gameService.list(1, 300, { platform: PlatformEnum.Xbox }, true)).games.map((game) => game.platformId);
     }
 
-    private async getListOfGameIdsToUpdateAchievements() {
-        return (await this.gameService.list(1, 300, { isPlatinumed: false, platform: PlatformEnum.Xbox })).games;
+    private async getListOfGameIdsToUpdateAchievements(gamesFromXbox: Partial<Game>[]) {
+        const listOfGamesFromApi = (await this.gameService.list(1, 300, { isPlatinumed: false, platform: PlatformEnum.Xbox })).games;
+
+        return listOfGamesFromApi.filter(
+            (game) => new Date(gamesFromXbox.find((g) => g.platformId === game.platformId)!.lastUnlock!).getTime() !== new Date(game.lastUnlock).getTime()
+        );
     }
 }

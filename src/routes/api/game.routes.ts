@@ -4,9 +4,6 @@ import { EditGameController } from "../../controllers/game/edit.controller";
 import { FindByIdGameController } from "../../controllers/game/find-by-id.controller";
 import { ListGameController } from "../../controllers/game/list.controller";
 import { SaveGameController } from "../../controllers/game/save.controller";
-import { SyncPsnGameController } from "../../controllers/sync/sync-psn.controller";
-import { SyncSteamGameController } from "../../controllers/sync/sync-steam.controller";
-import { SyncXboxGameController } from "../../controllers/sync/sync-xbox.controller";
 
 const router = Router();
 
@@ -15,8 +12,5 @@ router.get("/:id", (req, res) => new FindByIdGameController().findById(req, res)
 router.post("/", (req, res) => new SaveGameController().save(req, res));
 router.put("/:id", (req, res) => new EditGameController().edit(req, res));
 router.delete("/:id", (req, res) => new DeleteGameController().delete(req, res));
-router.post("/sync-playstation", (req, res) => new SyncPsnGameController().syncPsn(req, res));
-router.post("/sync-xbox", (req, res) => new SyncXboxGameController().syncXbox(req, res));
-router.post("/sync-steam", (req, res) => new SyncSteamGameController().syncSteam(req, res));
 
 export default router;

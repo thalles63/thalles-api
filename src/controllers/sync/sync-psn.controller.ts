@@ -32,10 +32,14 @@ export class SyncPsnGameController {
             }
         }
 
-        const gamesToUpdateAchievements = await this.getListOfGameIdsToUpdateAchievements();
+        const gamesToUpdateAchievements = await this.getListOfGameIdsToUpdateAchievements(gamesFromPsn);
 
         for (const game of gamesToUpdateAchievements) {
             const achievements = await this.playstationService.listAllEarnedByGame(game);
+
+            if (!achievements.length) {
+                continue;
+            }
 
             await this.achievementsService.updateAchievements(achievements, game.id);
 
@@ -45,8 +49,11 @@ export class SyncPsnGameController {
                 game.isPlatinumed = true;
                 game.isCampaignComplete = true;
                 game.dateCompleted = platinumAchievement.dateAchieved!;
-                this.gameService.edit(game.id, game);
             }
+
+            const gameWithTimePlayed = gamesFromPsn.find((g) => g.platformId === game.platformId);
+            game.timePlayed = gameWithTimePlayed?.timePlayed!;
+            this.gameService.edit(game.id, game);
         }
 
         res.json({});
@@ -58,8 +65,14 @@ export class SyncPsnGameController {
         );
     }
 
-    private async getListOfGameIdsToUpdateAchievements() {
-        return (await this.gameService.list(1, 300, { isPlatinumed: false, platform: In([PlatformEnum.Playstation4, PlatformEnum.Playstation5]) })).games;
+    private async getListOfGameIdsToUpdateAchievements(gamesFromPsn: Partial<Game>[]) {
+        const listOfGamesFromApi = (
+            await this.gameService.list(1, 300, { isPlatinumed: false, platform: In([PlatformEnum.Playstation4, PlatformEnum.Playstation5]) })
+        ).games;
+
+        return listOfGamesFromApi.filter(
+            (game) => new Date(gamesFromPsn.find((g) => g.igdbId === game.igdbId)!.lastUnlock!).getTime() !== new Date(game.lastUnlock).getTime()
+        );
     }
 
     private async getNpCommunicationId(game: Partial<Game>) {

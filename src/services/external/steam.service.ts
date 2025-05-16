@@ -60,6 +60,10 @@ export class SteamService {
                 `https://api.steampowered.com/ISteamUserStats/GetSchemaForGame/v2/?key=${this.apiKey}&appid=${game.platformId}`
             );
 
+            if (!gameAchievements.data.game?.availableGameStats?.achievements) {
+                return [];
+            }
+
             return gameAchievements.data.game.availableGameStats.achievements.map((achievement: any) => {
                 return {
                     platformId: achievement.name,
@@ -83,6 +87,10 @@ export class SteamService {
                 `https://api.steampowered.com/ISteamUserStats/GetPlayerAchievements/v1/?key=${this.apiKey}&steamid=${this.steamId}&appid=${game.platformId}`
             );
 
+            if (!gameAchievements.data.playerstats.achievements) {
+                return [];
+            }
+
             return gameAchievements.data.playerstats.achievements.map((achievement: any) => {
                 return {
                     platformId: achievement.apiname,
@@ -90,7 +98,11 @@ export class SteamService {
                     dateAchieved: achievement.unlocktime
                 };
             });
-        } catch (error) {
+        } catch (error: any) {
+            if (error.message === "Request failed with status code 400") {
+                return [];
+            }
+
             console.error("Error fetching achievements from Steam:", error);
             throw new Error("Failed to fetch achievements from Steam");
         }
