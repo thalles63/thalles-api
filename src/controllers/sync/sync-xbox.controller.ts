@@ -50,17 +50,19 @@ export class SyncXboxGameController {
             await this.achievementsService.updateAchievements(achievements, game.id);
 
             const is1000g = achievements.reduce((sum, item) => sum + Number(item.type), 0) >= 1000;
+            const mostRecent = achievements.reduce((newer: any, item: any) => {
+                return new Date(item.dateAchieved) > new Date(newer.dateAchieved) ? item : newer;
+            });
 
             if (is1000g) {
-                const mostRecent = achievements.reduce((newer: any, item: any) => {
-                    return new Date(item.dateAchieved) > new Date(newer.dateAchieved) ? item : newer;
-                });
-
                 game.isCampaignComplete = true;
                 game.isPlatinumed = true;
+                game.status = 2;
                 game.dateCompleted = mostRecent.dateAchieved!;
-                await this.gameService.edit(game.id, game);
             }
+
+            game.lastUnlock = mostRecent.dateAchieved!;
+            await this.gameService.edit(game.id, game);
         }
 
         res.json(newGames);

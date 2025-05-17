@@ -48,9 +48,14 @@ export class SyncPsnGameController {
             if (platinumAchievement) {
                 game.isPlatinumed = true;
                 game.isCampaignComplete = true;
+                game.status = 2;
                 game.dateCompleted = platinumAchievement.dateAchieved!;
             }
 
+            const mostRecent = achievements.reduce((newer: any, item: any) => {
+                return new Date(item.dateAchieved) > new Date(newer.dateAchieved) ? item : newer;
+            });
+            game.lastUnlock = mostRecent.dateAchieved!;
             const gameWithTimePlayed = gamesFromPsn.find((g) => g.platformId === game.platformId);
             game.timePlayed = gameWithTimePlayed?.timePlayed!;
             this.gameService.edit(game.id, game);

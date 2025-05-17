@@ -125,8 +125,15 @@ export class AchievementService {
                     continue;
                 }
 
-                Object.assign(achievement, achievementUpdated);
-                achievementsList.push(achievement);
+                const achievementToUpdate = <Achievement>{
+                    id: achievement.id,
+                    gameId: gameId,
+                    isAchieved: true,
+                    percentageAchieved: achievementUpdated.percentageAchieved ?? 0,
+                    dateAchieved: achievementUpdated.dateAchieved
+                };
+
+                achievementsList.push(achievementToUpdate);
             }
 
             return await this.achievementRepository.save(achievementsList);

@@ -28,7 +28,7 @@ export class GameService {
     }
 
     async getById(id: string): Promise<Game | null> {
-        return await this.gameRepository.findOneBy({ id });
+        return await this.gameRepository.findOne({ where: { id }, relations: ["achievements"] });
     }
 
     async saveFromWeb(game: Partial<Game>, skipIgdb = false) {
@@ -48,6 +48,7 @@ export class GameService {
                 image: igdbGame.image ?? "",
                 screenshot: igdbGame.screenshot ?? "",
                 igdbId: game.igdbId,
+                description: igdbGame.description,
                 platformId: game.platformId,
                 platform: game.platform,
                 dateCompleted: game.dateCompleted,

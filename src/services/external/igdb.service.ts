@@ -52,7 +52,7 @@ export class IgdbService {
             const response: any = await axios.post(
                 "https://api.igdb.com/v4/games",
                 `where id = ${externalGameResponse.data[0].game}; 
-                fields name,cover.url,screenshots.url;
+                fields name,cover.url,screenshots.url, summary;
                 limit 1;`,
                 {
                     headers: {
@@ -68,7 +68,8 @@ export class IgdbService {
             return {
                 name: game.name,
                 image: game.cover?.url ? `https:${game.cover.url.replace("t_thumb", "t_cover_big_2x")}` : "",
-                screenshot: `https:${game.screenshots[0].url.replace("t_thumb", "t_1080p_2x")}`
+                screenshot: `https:${game.screenshots[0].url.replace("t_thumb", "t_1080p_2x")}`,
+                description: game.summary
             };
         } catch (error) {
             console.error("Error searching game in IGDB:", error);

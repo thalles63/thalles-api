@@ -51,17 +51,18 @@ export class SyncSteamGameController {
             await this.achievementsService.updateAchievements(filtererdAchievements, game.id);
 
             const is100Percent = allAchievements.every((a) => a.isAchieved);
+            const mostRecent = filtererdAchievements.reduce((newer: any, item: any) => {
+                return new Date(item.dateAchieved) > new Date(newer.dateAchieved) ? item : newer;
+            });
 
             if (is100Percent) {
-                const mostRecent = filtererdAchievements.reduce((newer: any, item: any) => {
-                    return new Date(item.dateAchieved) > new Date(newer.dateAchieved) ? item : newer;
-                });
-
                 game.isCampaignComplete = true;
                 game.isPlatinumed = true;
+                game.status = 2;
                 game.dateCompleted = mostRecent.dateAchieved!;
             }
 
+            game.lastUnlock = mostRecent.dateAchieved!;
             const gameWithTimePlayed = gamesFromSteam.find((g) => g.platformId === game.platformId);
             game.timePlayed = gameWithTimePlayed!.timePlayed!;
             await this.gameService.edit(game.id, game);

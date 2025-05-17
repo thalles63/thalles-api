@@ -1,3 +1,4 @@
+import cors from "cors";
 import express, { NextFunction, Request, Response } from "express";
 import "reflect-metadata";
 import { config } from "./config/app.config";
@@ -17,6 +18,7 @@ appDataSource
         console.error("Error connecting to database:", error);
     });
 
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

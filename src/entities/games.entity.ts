@@ -15,8 +15,14 @@ export class Game {
     @Column()
     name: string;
 
+    @Column({ nullable: true })
+    description: string;
+
     @Column()
     image: string;
+
+    @Column({ default: 1 })
+    status: number;
 
     @Column()
     platform: number;
