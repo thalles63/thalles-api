@@ -76,4 +76,37 @@ export class IgdbService {
             throw new Error("Failed to search game in IGDB");
         }
     }
+
+    async searchGameByName(gameName: string): Promise<Partial<Game[]> | null> {
+        try {
+            const token = await this.getAccessToken();
+
+            const gamesResponse: any = await axios.post(
+                "https://api.igdb.com/v4/games",
+                `search "${gameName}"; 
+                fields name,cover.url,screenshots.url, summary;
+                limit 5;`,
+                {
+                    headers: {
+                        "Client-ID": config.igdb.clientId,
+                        Authorization: `Bearer ${token}`,
+                        "Content-Type": "text/plain"
+                    }
+                }
+            );
+
+            return gamesResponse.data.map((game: any) => {
+                return {
+                    igdbId: game.id,
+                    name: game.name,
+                    image: game.cover?.url ? `https:${game.cover.url.replace("t_thumb", "t_cover_big_2x")}` : "",
+                    screenshot: game.screenshots?.length ? `https:${game.screenshots[0].url.replace("t_thumb", "t_1080p_2x")}` : undefined,
+                    description: game.summary
+                };
+            });
+        } catch (error) {
+            console.error("Error searching game in IGDB:", error);
+            throw new Error("Failed to search game in IGDB");
+        }
+    }
 }

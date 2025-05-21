@@ -42,7 +42,7 @@ export class Game {
     @Column({ nullable: true })
     screenshot: string;
 
-    @Column()
+    @Column({ type: "decimal", precision: 5, scale: 2, default: 0 })
     rating: number;
 
     @Column({ nullable: true })

@@ -9,7 +9,7 @@ export class EditGameController {
     }
 
     async edit(req: Request, res: Response): Promise<void> {
-        const updatedGame = await this.gameService.edit(req.params.id, req.body);
+        const updatedGame = await this.gameService.edit(req.params.id, req.body.game);
 
         res.json(updatedGame);
     }

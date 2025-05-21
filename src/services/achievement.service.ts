@@ -144,4 +144,40 @@ export class AchievementService {
             throw new Error(`Failed to edit game: ${error instanceof Error ? error.message : "Unknown error"}`);
         }
     }
+
+    async delete(id: string): Promise<boolean> {
+        try {
+            const achievement = await this.achievementRepository.findOneBy({ id });
+
+            if (!achievement) {
+                throw new NotFoundError("Achievement not found");
+            }
+
+            await this.achievementRepository.delete(id);
+            return true;
+        } catch (error) {
+            if (error instanceof NotFoundError) {
+                throw error;
+            }
+            throw new Error(`Failed to delete achievement: ${error instanceof Error ? error.message : "Unknown error"}`);
+        }
+    }
+
+    async edit(id: string, achievementData: Partial<Achievement>): Promise<Achievement | null> {
+        try {
+            const achievement = await this.achievementRepository.findOneBy({ id });
+
+            if (!achievement) {
+                throw new NotFoundError("Achievement not found");
+            }
+
+            Object.assign(achievement, achievementData);
+            return await this.achievementRepository.save(achievement);
+        } catch (error) {
+            if (error instanceof NotFoundError) {
+                throw error;
+            }
+            throw new Error(`Failed to edit achievement: ${error instanceof Error ? error.message : "Unknown error"}`);
+        }
+    }
 }
