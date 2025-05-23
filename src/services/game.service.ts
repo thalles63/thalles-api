@@ -13,14 +13,12 @@ export class GameService {
         this.igdbService = new IgdbService();
     }
 
-    async list(page: number = 1, limit: number = 10, where: any = {}, includeDeleted: boolean = false): Promise<{ games: Game[]; total: number }> {
+    async list(pageOptions = { page: 1, limit: 10, order: {} }, where: any = {}, includeDeleted: boolean = false): Promise<{ games: Game[]; total: number }> {
         const [games, total] = await this.gameRepository.findAndCount({
             where,
-            skip: (page - 1) * limit,
-            take: limit,
-            order: {
-                name: "ASC"
-            },
+            skip: (pageOptions.page - 1) * pageOptions.limit,
+            take: pageOptions.limit,
+            order: pageOptions.order,
             withDeleted: includeDeleted
         });
 
@@ -36,10 +34,12 @@ export class GameService {
             let igdbGame: Partial<Game> | null = {};
 
             if (!skipIgdb) {
-                igdbGame = await this.igdbService.searchGameByExternalId(game.igdbId!);
+                try {
+                    igdbGame = await this.igdbService.searchGameByExternalId(game.igdbId!);
 
-                if (!igdbGame) {
-                    return;
+                    igdbGame ??= {};
+                } catch {
+                    igdbGame ??= {};
                 }
             }
 
@@ -55,6 +55,7 @@ export class GameService {
                 isPlatinumed: game.isPlatinumed || false,
                 isCampaignComplete: game.isCampaignComplete || false,
                 rating: 0,
+                status: 1,
                 timePlayed: 0
             });
 
@@ -76,11 +77,13 @@ export class GameService {
                 name: game.name,
                 image: game.image,
                 platform: game.platform,
+                description: game.description,
                 timePlayed: game.timePlayed ?? 0,
                 isPlatinumed: game.isPlatinumed ?? false,
                 dateCompleted: game.dateCompleted,
                 isCampaignComplete: game.isCampaignComplete ?? false,
                 screenshot: game.screenshot,
+                status: game.status,
                 rating: game.rating ?? 0
             });
 

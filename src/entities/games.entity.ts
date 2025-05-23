@@ -46,7 +46,7 @@ export class Game {
     rating: number;
 
     @Column({ nullable: true })
-    lastUnlock: Date;
+    lastUnlock?: Date;
 
     @OneToMany(() => Achievement, (achievement) => achievement.game)
     achievements: Achievement[];

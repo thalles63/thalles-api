@@ -49,7 +49,8 @@ export class SyncXboxGameController {
 
             await this.achievementsService.updateAchievements(achievements, game.id);
 
-            const is1000g = achievements.reduce((sum, item) => sum + Number(item.type), 0) >= 1000;
+            const gamePontuation = achievements.reduce((sum, item) => sum + Number(item.type), 0);
+            const is1000g = gamePontuation >= 1000;
             const mostRecent = achievements.reduce((newer: any, item: any) => {
                 return new Date(item.dateAchieved) > new Date(newer.dateAchieved) ? item : newer;
             });
@@ -61,7 +62,7 @@ export class SyncXboxGameController {
                 game.dateCompleted = mostRecent.dateAchieved!;
             }
 
-            game.lastUnlock = mostRecent.dateAchieved!;
+            game.lastUnlock = gamePontuation > 0 ? mostRecent.dateAchieved! : undefined;
             await this.gameService.edit(game.id, game);
         }
 
@@ -69,14 +70,20 @@ export class SyncXboxGameController {
     }
 
     private async getIdsOfGamesSavedInApi() {
-        return (await this.gameService.list(1, 300, { platform: PlatformEnum.Xbox }, true)).games.map((game) => game.platformId);
+        return (await this.gameService.list({ page: 1, limit: 300, order: {} }, { platform: PlatformEnum.Xbox }, true)).games.map((game) => game.platformId);
     }
 
     private async getListOfGameIdsToUpdateAchievements(gamesFromXbox: Partial<Game>[]) {
-        const listOfGamesFromApi = (await this.gameService.list(1, 300, { isPlatinumed: false, platform: PlatformEnum.Xbox })).games;
+        const listOfGamesFromApi = (await this.gameService.list({ page: 1, limit: 300, order: {} }, { isPlatinumed: false, platform: PlatformEnum.Xbox }))
+            .games;
 
-        return listOfGamesFromApi.filter(
-            (game) => new Date(gamesFromXbox.find((g) => g.platformId === game.platformId)!.lastUnlock!).getTime() !== new Date(game.lastUnlock).getTime()
-        );
+        return listOfGamesFromApi.filter((game) => {
+            const lastUnlock = gamesFromXbox.find((g) => g.platformId === game.platformId)!.lastUnlock;
+            if (!lastUnlock) {
+                return lastUnlock !== game.lastUnlock;
+            }
+
+            return new Date(lastUnlock).getTime() !== new Date(game.lastUnlock!).getTime();
+        });
     }
 }

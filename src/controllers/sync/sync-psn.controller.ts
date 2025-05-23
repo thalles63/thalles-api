@@ -65,14 +65,17 @@ export class SyncPsnGameController {
     }
 
     private async getIdsOfGamesSavedInApi() {
-        return (await this.gameService.list(1, 300, { platform: In([PlatformEnum.Playstation4, PlatformEnum.Playstation5]) }, true)).games.map(
-            (game) => game.igdbId
-        );
+        return (
+            await this.gameService.list({ page: 1, limit: 300, order: {} }, { platform: In([PlatformEnum.Playstation4, PlatformEnum.Playstation5]) }, true)
+        ).games.map((game) => game.igdbId);
     }
 
     private async getListOfGameIdsToUpdateAchievements(gamesFromPsn: Partial<Game>[]) {
         const listOfGamesFromApi = (
-            await this.gameService.list(1, 300, { isPlatinumed: false, platform: In([PlatformEnum.Playstation4, PlatformEnum.Playstation5]) })
+            await this.gameService.list(
+                { page: 1, limit: 300, order: {} },
+                { isPlatinumed: false, platform: In([PlatformEnum.Playstation4, PlatformEnum.Playstation5]) }
+            )
         ).games;
 
         return listOfGamesFromApi.filter(

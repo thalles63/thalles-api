@@ -72,12 +72,13 @@ export class SyncSteamGameController {
     }
 
     private async getIdsOfGamesSavedInApi() {
-        const games = await this.gameService.list(1, 300, { platform: PlatformEnum.Steam });
+        const games = await this.gameService.list({ page: 1, limit: 300, order: {} }, { platform: PlatformEnum.Steam });
         return games.games.map((game) => game.platformId?.toString() ?? "");
     }
 
     private async getListOfGameIdsToUpdateAchievements(gamesFromSteam: Partial<Game>[]) {
-        const listOfGamesFromApi = (await this.gameService.list(1, 300, { isPlatinumed: false, platform: PlatformEnum.Steam })).games;
+        const listOfGamesFromApi = (await this.gameService.list({ page: 1, limit: 300, order: {} }, { isPlatinumed: false, platform: PlatformEnum.Steam }))
+            .games;
 
         return listOfGamesFromApi.filter((game) => gamesFromSteam.find((g) => g.platformId === game.platformId)!.timePlayed !== game.timePlayed);
     }

@@ -107,4 +107,25 @@ export class SteamService {
             throw new Error("Failed to fetch achievements from Steam");
         }
     }
+
+    async getAchievementPercentages(gameId: string): Promise<{ name: string; percent: string }[]> {
+        try {
+            const gameAchievements: any = await axios.get(
+                `https://api.steampowered.com/ISteamUserStats/GetGlobalAchievementPercentagesForApp/v2/?gameid=${gameId}`
+            );
+
+            if (!gameAchievements.data.achievementpercentages.achievements) {
+                return [];
+            }
+
+            return gameAchievements.data.achievementpercentages.achievements;
+        } catch (error: any) {
+            if (error.message === "Request failed with status code 400") {
+                return [];
+            }
+
+            console.error("Error fetching achievements from Steam:", error);
+            throw new Error("Failed to fetch achievements from Steam");
+        }
+    }
 }

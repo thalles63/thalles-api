@@ -2,7 +2,7 @@ import { Repository } from "typeorm";
 import { appDataSource } from "../config/database.config";
 import { Achievement } from "../entities/achievements.entity";
 import { Game } from "../entities/games.entity";
-import { NotFoundError } from "../utils/errors/errors";
+import { NotFoundError, ValidationError } from "../utils/errors/errors";
 import { PlayStationService } from "./external/playstation.service";
 import { SteamService } from "./external/steam.service";
 import { XboxService } from "./external/xbox.service";
@@ -75,9 +75,11 @@ export class AchievementService {
     async saveFromSteam(game: Partial<Game>) {
         try {
             const achievements = await this.steamService.getListOfAchievements(<Game>game);
+            const achievementPercentages = await this.steamService.getAchievementPercentages(game.platformId!);
 
             const achievementsList: Achievement[] = [];
             for (const achievement of achievements) {
+                const percentage = achievementPercentages.find((p) => p.name === achievement.platformId)?.percent;
                 const newAchievement = this.achievementRepository.create({
                     gameId: game.id,
                     platformId: achievement.platformId,
@@ -87,7 +89,7 @@ export class AchievementService {
                     type: "0",
                     isAchieved: false,
                     dateAchieved: undefined,
-                    percentageAchieved: 0
+                    percentageAchieved: Number(percentage ?? 0)
                 });
 
                 achievementsList.push(newAchievement);
@@ -129,7 +131,7 @@ export class AchievementService {
                     id: achievement.id,
                     gameId: gameId,
                     isAchieved: true,
-                    percentageAchieved: achievementUpdated.percentageAchieved ?? 0,
+                    percentageAchieved: achievement.percentageAchieved || achievementUpdated.percentageAchieved || 0,
                     dateAchieved: achievementUpdated.dateAchieved
                 };
 
@@ -178,6 +180,29 @@ export class AchievementService {
                 throw error;
             }
             throw new Error(`Failed to edit achievement: ${error instanceof Error ? error.message : "Unknown error"}`);
+        }
+    }
+
+    async manualSave(achievement: Achievement, gameId: string) {
+        try {
+            const newAchievement = this.achievementRepository.create({
+                gameId: gameId,
+                platformId: "",
+                description: achievement.description,
+                image: achievement.image,
+                name: achievement.name,
+                type: "0",
+                isAchieved: achievement.isAchieved,
+                dateAchieved: achievement.dateAchieved,
+                percentageAchieved: Number(achievement.percentageAchieved ?? 0)
+            });
+
+            return await this.achievementRepository.save(newAchievement);
+        } catch (error) {
+            if (error instanceof ValidationError) {
+                throw error;
+            }
+            throw new Error(`Failed to save game: ${error instanceof Error ? error.message : "Unknown error"}`);
         }
     }
 }
