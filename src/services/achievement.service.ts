@@ -121,17 +121,24 @@ export class AchievementService {
 
             const achievementsList: Achievement[] = [];
             for (const achievementUpdated of achievementsUpdated) {
-                const achievement = achievementsToUpdate.find((a) => a.platformId === achievementUpdated.platformId);
+                const achievement = achievementsToUpdate.find((a) => a.platformId === String(achievementUpdated.platformId));
 
                 if (!achievement) {
                     continue;
+                }
+
+                let percentage = 0;
+                if (Number(achievement.percentageAchieved)) {
+                    percentage = achievement.percentageAchieved;
+                } else if (Number(achievementUpdated.percentageAchieved)) {
+                    percentage = achievementUpdated.percentageAchieved!;
                 }
 
                 const achievementToUpdate = <Achievement>{
                     id: achievement.id,
                     gameId: gameId,
                     isAchieved: true,
-                    percentageAchieved: achievement.percentageAchieved || achievementUpdated.percentageAchieved || 0,
+                    percentageAchieved: percentage,
                     dateAchieved: achievementUpdated.dateAchieved
                 };
 
