@@ -114,13 +114,17 @@ export class SteamService {
                 `https://api.steampowered.com/ISteamUserStats/GetGlobalAchievementPercentagesForApp/v2/?gameid=${gameId}`
             );
 
-            if (!gameAchievements.data.achievementpercentages.achievements) {
+            if (!gameAchievements?.data?.achievementpercentages?.achievements) {
                 return [];
             }
 
             return gameAchievements.data.achievementpercentages.achievements;
         } catch (error: any) {
             if (error.message === "Request failed with status code 400") {
+                return [];
+            }
+
+            if (error.status === 403) {
                 return [];
             }
 

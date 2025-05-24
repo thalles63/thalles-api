@@ -48,6 +48,7 @@ export class GameService {
                 image: igdbGame.image ?? "",
                 screenshot: igdbGame.screenshot ?? "",
                 igdbId: game.igdbId,
+                psnId: game.psnId,
                 description: igdbGame.description,
                 platformId: game.platformId,
                 platform: game.platform,

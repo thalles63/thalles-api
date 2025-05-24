@@ -57,7 +57,7 @@ export class AchievementService {
                     description: achievement.description,
                     image: "",
                     name: achievement.name,
-                    type: achievement.rewards[0].value,
+                    type: achievement.rewards?.length ? achievement.rewards[0].value : "",
                     isAchieved: achievement.progressState === "Achieved",
                     dateAchieved: achievement.progressState === "Achieved" ? achievement.progression.timeUnlocked : undefined,
                     percentageAchieved: 0

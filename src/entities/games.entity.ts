@@ -12,6 +12,9 @@ export class Game {
     @Column()
     platformId: string;
 
+    @Column({ nullable: true })
+    psnId: string;
+
     @Column()
     name: string;
 

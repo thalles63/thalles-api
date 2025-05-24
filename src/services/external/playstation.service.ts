@@ -27,7 +27,8 @@ export class PlayStationService {
                 return {
                     name: game.name,
                     igdbId: game.concept.id.toString(),
-                    platformId: game.titleId,
+                    platformId: "",
+                    psnId: game.titleId,
                     platform: game.category === "ps5_native_game" ? PlatformEnum.Playstation5 : PlatformEnum.Playstation4,
                     timePlayed: this.parsePlayDuration(game.playDuration),
                     lastUnlock: game.lastPlayedDateTime
@@ -57,7 +58,7 @@ export class PlayStationService {
         try {
             const accessToken = await this.getPsnAccessToken();
             const accountId = config.psn.accountId;
-            const titleId = game.platformId;
+            const titleId = game.psnId;
 
             const response = await axios.get(`https://m.np.playstation.com/api/trophy/v1/users/${accountId}/titles/trophyTitles`, {
                 params: {

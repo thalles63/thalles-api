@@ -36,8 +36,13 @@ export class SyncPsnGameController {
 
         for (const game of gamesToUpdateAchievements) {
             const achievements = await this.playstationService.listAllEarnedByGame(game);
+            const gameWithTimePlayed = gamesFromPsn.find((g) => g.psnId === game.psnId);
+
+            game.lastUnlock = gameWithTimePlayed?.lastUnlock;
+            game.timePlayed = gameWithTimePlayed?.timePlayed!;
 
             if (!achievements.length) {
+                await this.gameService.edit(game.id, game);
                 continue;
             }
 
@@ -52,16 +57,10 @@ export class SyncPsnGameController {
                 game.dateCompleted = platinumAchievement.dateAchieved!;
             }
 
-            const mostRecent = achievements.reduce((newer: any, item: any) => {
-                return new Date(item.dateAchieved) > new Date(newer.dateAchieved) ? item : newer;
-            });
-            game.lastUnlock = mostRecent.dateAchieved!;
-            const gameWithTimePlayed = gamesFromPsn.find((g) => g.platformId === game.platformId);
-            game.timePlayed = gameWithTimePlayed?.timePlayed!;
-            this.gameService.edit(game.id, game);
+            await this.gameService.edit(game.id, game);
         }
 
-        res.json({});
+        res.json(gamesToUpdateAchievements);
     }
 
     private async getIdsOfGamesSavedInApi() {
@@ -79,7 +78,7 @@ export class SyncPsnGameController {
         ).games;
 
         return listOfGamesFromApi.filter(
-            (game) => new Date(gamesFromPsn.find((g) => g.igdbId === game.igdbId)!.lastUnlock!).getTime() !== new Date(game.lastUnlock).getTime()
+            (game) => new Date(gamesFromPsn.find((g) => g.psnId === game.psnId)!.lastUnlock!).getTime() !== new Date(game.lastUnlock!).getTime()
         );
     }
 

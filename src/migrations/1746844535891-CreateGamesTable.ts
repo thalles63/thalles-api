@@ -5,7 +5,7 @@ export class CreateGamesTable1746844535891 implements MigrationInterface {
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(
-            `CREATE TABLE "games" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "name" character varying NOT NULL, "image" character varying NOT NULL, "platform" integer NOT NULL, "timePlayed" integer NOT NULL DEFAULT '0', "isPlatinumed" boolean NOT NULL DEFAULT false, "dateCompleted" TIMESTAMP, "isCampaignComplete" boolean NOT NULL DEFAULT false, "rating" integer NOT NULL, "igdbId" character varying NOT NULL, "platformId" character varying NOT NULL, "achievementsSearchId" character varying NOT NULL, "screenshot" character varying, "deletedAt" TIMESTAMP, "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), CONSTRAINT "PK_c9b16b62917b5595af982d66337" PRIMARY KEY ("id"))`
+            `CREATE TABLE "games" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "name" character varying NOT NULL, "image" character varying NOT NULL, "platform" integer NOT NULL, "timePlayed" integer NOT NULL DEFAULT '0', "isPlatinumed" boolean NOT NULL DEFAULT false, "dateCompleted" TIMESTAMP, "isCampaignComplete" boolean NOT NULL DEFAULT false, "rating" integer NOT NULL, "igdbId" character varying NOT NULL, "platformId" character varying NOT NULL, "screenshot" character varying, "deletedAt" TIMESTAMP, "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), CONSTRAINT "PK_c9b16b62917b5595af982d66337" PRIMARY KEY ("id"))`
         );
     }
 

@@ -24,7 +24,9 @@ export class SyncXboxGameController {
         const newGames = gamesFromXboxLiveApi.filter((item) => !gamesSavedInApiIds.includes(item.platformId?.toString() ?? ""));
 
         for (const game of newGames) {
-            const savedGame = await this.gameService.saveFromWeb(game, true);
+            const gameToSave = structuredClone(game);
+            gameToSave.lastUnlock = undefined;
+            const savedGame = await this.gameService.saveFromWeb(gameToSave, true);
 
             await this.achievementsService.saveFromXbox(savedGame!);
         }
@@ -43,17 +45,21 @@ export class SyncXboxGameController {
                     };
                 });
 
+            const gameWithTimePlayed = gamesFromXboxLiveApi.find((g) => g.platformId === game.platformId);
+            game.lastUnlock = gameWithTimePlayed?.lastUnlock;
+
             if (!achievements.length) {
+                await this.gameService.edit(game.id, game);
                 continue;
             }
 
             await this.achievementsService.updateAchievements(achievements, game.id);
 
-            const gamePontuation = achievements.reduce((sum, item) => sum + Number(item.type), 0);
-            const is1000g = gamePontuation >= 1000;
             const mostRecent = achievements.reduce((newer: any, item: any) => {
                 return new Date(item.dateAchieved) > new Date(newer.dateAchieved) ? item : newer;
             });
+            const gamePontuation = achievements.reduce((sum, item) => sum + Number(item.type), 0);
+            const is1000g = gamePontuation >= 1000;
 
             if (is1000g) {
                 game.isCampaignComplete = true;
@@ -62,11 +68,10 @@ export class SyncXboxGameController {
                 game.dateCompleted = mostRecent.dateAchieved!;
             }
 
-            game.lastUnlock = gamePontuation > 0 ? mostRecent.dateAchieved! : undefined;
             await this.gameService.edit(game.id, game);
         }
 
-        res.json(newGames);
+        res.json(gamesToUpdateAchievements);
     }
 
     private async getIdsOfGamesSavedInApi() {
@@ -79,8 +84,9 @@ export class SyncXboxGameController {
 
         return listOfGamesFromApi.filter((game) => {
             const lastUnlock = gamesFromXbox.find((g) => g.platformId === game.platformId)!.lastUnlock;
+
             if (!lastUnlock) {
-                return lastUnlock !== game.lastUnlock;
+                return !!lastUnlock !== !!game.lastUnlock;
             }
 
             return new Date(lastUnlock).getTime() !== new Date(game.lastUnlock!).getTime();
