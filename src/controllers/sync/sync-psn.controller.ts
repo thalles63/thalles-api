@@ -38,7 +38,7 @@ export class SyncPsnGameController {
             const achievements = await this.playstationService.listAllEarnedByGame(game);
             const gameWithTimePlayed = gamesFromPsn.find((g) => g.psnId === game.psnId);
 
-            game.lastUnlock = gameWithTimePlayed?.lastUnlock;
+            game.lastTimePlayed = gameWithTimePlayed?.lastTimePlayed;
             game.timePlayed = gameWithTimePlayed?.timePlayed!;
 
             if (!achievements.length) {
@@ -47,6 +47,12 @@ export class SyncPsnGameController {
             }
 
             await this.achievementsService.updateAchievements(achievements, game.id);
+
+            const mostRecent = achievements.reduce((newer: any, item: any) => {
+                return new Date(item.dateAchieved).getTime() > new Date(newer.dateAchieved).getTime() ? item : newer;
+            });
+
+            game.lastUnlock = mostRecent.dateAchieved;
 
             const platinumAchievement = achievements.find((a) => a.type === "platinum");
 
@@ -78,7 +84,7 @@ export class SyncPsnGameController {
         ).games;
 
         return listOfGamesFromApi.filter(
-            (game) => new Date(gamesFromPsn.find((g) => g.psnId === game.psnId)!.lastUnlock!).getTime() !== new Date(game.lastUnlock!).getTime()
+            (game) => new Date(gamesFromPsn.find((g) => g.psnId === game.psnId)!.lastTimePlayed!).getTime() !== new Date(game.lastTimePlayed!).getTime()
         );
     }
 

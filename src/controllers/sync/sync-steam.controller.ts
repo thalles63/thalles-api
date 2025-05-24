@@ -39,7 +39,7 @@ export class SyncSteamGameController {
             const gameWithTimePlayed = gamesFromSteam.find((g) => g.platformId === game.platformId);
 
             game.timePlayed = gameWithTimePlayed?.timePlayed!;
-            game.lastUnlock = undefined;
+            game.lastTimePlayed = undefined;
 
             if (!achievements?.length) {
                 await this.gameService.edit(game.id, game);
@@ -65,10 +65,11 @@ export class SyncSteamGameController {
             }
 
             const mostRecent = achievements.reduce((newer: any, item: any) => {
-                return new Date(item.dateAchieved) > new Date(newer.dateAchieved) ? item : newer;
-            }, {});
+                return new Date(item.dateAchieved).getTime() > new Date(newer.dateAchieved).getTime() ? item : newer;
+            });
 
-            game.lastUnlock = mostRecent.dateAchieved!;
+            game.lastTimePlayed = mostRecent.dateAchieved!;
+            game.lastUnlock = mostRecent.dateAchieved;
 
             await this.achievementsService.updateAchievements(achievements, game.id);
 

@@ -25,7 +25,7 @@ export class SyncXboxGameController {
 
         for (const game of newGames) {
             const gameToSave = structuredClone(game);
-            gameToSave.lastUnlock = undefined;
+            gameToSave.lastTimePlayed = undefined;
             const savedGame = await this.gameService.saveFromWeb(gameToSave, true);
 
             await this.achievementsService.saveFromXbox(savedGame!);
@@ -46,7 +46,8 @@ export class SyncXboxGameController {
                 });
 
             const gameWithTimePlayed = gamesFromXboxLiveApi.find((g) => g.platformId === game.platformId);
-            game.lastUnlock = gameWithTimePlayed?.lastUnlock;
+            game.lastTimePlayed = gameWithTimePlayed?.lastTimePlayed;
+            game.lastUnlock = gameWithTimePlayed?.lastTimePlayed;
 
             if (!achievements.length) {
                 await this.gameService.edit(game.id, game);
@@ -83,13 +84,13 @@ export class SyncXboxGameController {
             .games;
 
         return listOfGamesFromApi.filter((game) => {
-            const lastUnlock = gamesFromXbox.find((g) => g.platformId === game.platformId)!.lastUnlock;
+            const lastTimePlayed = gamesFromXbox.find((g) => g.platformId === game.platformId)!.lastTimePlayed;
 
-            if (!lastUnlock) {
-                return !!lastUnlock !== !!game.lastUnlock;
+            if (!lastTimePlayed) {
+                return !!lastTimePlayed !== !!game.lastTimePlayed;
             }
 
-            return new Date(lastUnlock).getTime() !== new Date(game.lastUnlock!).getTime();
+            return new Date(lastTimePlayed).getTime() !== new Date(game.lastTimePlayed!).getTime();
         });
     }
 }

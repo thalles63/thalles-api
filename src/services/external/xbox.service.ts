@@ -56,7 +56,7 @@ export class XboxService {
                     isPlatinumed: false,
                     isCampaignComplete: game.currentGamerscore >= 1000,
                     dateCompleted: game.currentGamerscore >= 1000 ? game.lastUnlock : undefined,
-                    lastUnlock: game.currentGamerscore > 0 ? game.lastUnlock : undefined
+                    lastTimePlayed: game.currentGamerscore > 0 ? game.lastUnlock : undefined
                 };
             });
         } catch (error) {

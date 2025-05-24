@@ -31,7 +31,7 @@ export class PlayStationService {
                     psnId: game.titleId,
                     platform: game.category === "ps5_native_game" ? PlatformEnum.Playstation5 : PlatformEnum.Playstation4,
                     timePlayed: this.parsePlayDuration(game.playDuration),
-                    lastUnlock: game.lastPlayedDateTime
+                    lastTimePlayed: game.lastPlayedDateTime
                 };
             });
         } catch (error) {
