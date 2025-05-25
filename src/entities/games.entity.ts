@@ -45,6 +45,9 @@ export class Game {
     @Column({ nullable: true })
     screenshot: string;
 
+    @Column({ default: false })
+    isManualRegister: boolean;
+
     @Column({ type: "decimal", precision: 5, scale: 2, default: 0 })
     rating: number;
 

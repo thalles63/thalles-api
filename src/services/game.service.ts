@@ -1,5 +1,6 @@
 import { Repository } from "typeorm";
 import { appDataSource } from "../config/database.config";
+import { Achievement } from "../entities/achievements.entity";
 import { Game } from "../entities/games.entity";
 import { NotFoundError, ValidationError } from "../utils/errors/errors";
 import { IgdbService } from "./external/igdb.service";
@@ -7,9 +8,11 @@ import { IgdbService } from "./external/igdb.service";
 export class GameService {
     private readonly gameRepository: Repository<Game>;
     private readonly igdbService: IgdbService;
+    private readonly achievementRepository: Repository<Achievement>;
 
     constructor() {
         this.gameRepository = appDataSource.getRepository(Game);
+        this.achievementRepository = appDataSource.getRepository(Achievement);
         this.igdbService = new IgdbService();
     }
 
@@ -84,6 +87,7 @@ export class GameService {
                 dateCompleted: game.dateCompleted,
                 isCampaignComplete: game.isCampaignComplete ?? false,
                 screenshot: game.screenshot,
+                isManualRegister: true,
                 status: game.status,
                 rating: game.rating ?? 0
             });
@@ -122,6 +126,21 @@ export class GameService {
             if (!game) {
                 throw new NotFoundError("Game not found");
             }
+
+            const achievements = await this.achievementRepository.find({
+                where: { gameId: id, isAchieved: true }
+            });
+
+            if (gameData.isManualRegister && achievements?.length) {
+                const mostRecent = achievements.reduce((newer: any, item: any) => {
+                    return new Date(item.dateAchieved).getTime() > new Date(newer.dateAchieved).getTime() ? item : newer;
+                });
+
+                gameData.lastTimePlayed = mostRecent.dateAchieved;
+                gameData.lastUnlock = mostRecent.dateAchieved;
+            }
+
+            gameData.timePlayed ??= 0;
 
             Object.assign(game, gameData);
             return await this.gameRepository.save(game);

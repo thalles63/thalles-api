@@ -28,7 +28,6 @@ export class XboxService {
                 if (continuationToken) {
                     url += "?continuationToken=" + continuationToken;
                 }
-                console.log(url);
 
                 const response = await axios.get<XboxTitlesResponse>(url, {
                     headers: {
@@ -125,8 +124,6 @@ export class XboxService {
             this.token.expiresIn = response.expires_on;
             this.token.xuid = response.xuid;
             this.token.userHash = response.user_hash;
-
-            console.log(this.token);
 
             return this.token;
         } catch (error) {
