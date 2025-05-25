@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import { In } from "typeorm";
 import { GameService } from "../../services/game.service";
 import { GameSort } from "../../utils/sorts/game.sort";
 
@@ -14,7 +15,8 @@ export class ListGameController {
         const limit = parseInt(req.query.limit as string) || 10;
         const gameSorts: any = GameSort;
         const order = gameSorts[req.query.sort as string];
-        const { games, total } = await this.gameService.list({ page, limit, order });
+        const status = Number(req.query.status) === 5 ? [1, 2] : [Number(req.query.status)];
+        const { games, total } = await this.gameService.list({ page, limit, order }, { status: In(status) });
 
         res.json({
             games,
