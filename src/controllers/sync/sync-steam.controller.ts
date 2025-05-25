@@ -87,7 +87,7 @@ export class SyncSteamGameController {
     }
 
     private async getIdsOfGamesSavedInApi() {
-        const games = await this.gameService.list({ page: 1, limit: 300, order: {} }, { platform: PlatformEnum.Steam });
+        const games = await this.gameService.list({ page: 1, limit: 300, order: {} }, { platform: PlatformEnum.Steam }, true);
         return games.games.map((game) => game.platformId?.toString() ?? "");
     }
 
