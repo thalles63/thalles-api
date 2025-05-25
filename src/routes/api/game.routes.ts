@@ -5,12 +5,14 @@ import { FindByIdGameController } from "../../controllers/game/find-by-id.contro
 import { ListGameController } from "../../controllers/game/list.controller";
 import { SaveGameController } from "../../controllers/game/save.controller";
 import { SearchIgdbController } from "../../controllers/game/search-igdb";
+import { SearchSteamController } from "../../controllers/game/search-steam";
 import { authMiddleware } from "../../utils/auth.middleware";
 
 const router = Router();
 
 router.get("/", (req, res) => new ListGameController().list(req, res));
 router.get("/search-igdb", authMiddleware, (req, res) => new SearchIgdbController().search(req, res));
+router.get("/search-steam", authMiddleware, (req, res) => new SearchSteamController().search(req, res));
 router.get("/:id", (req, res) => new FindByIdGameController().findById(req, res));
 router.post("/", authMiddleware, (req, res) => new SaveGameController().save(req, res));
 router.put("/:id", authMiddleware, (req, res) => new EditGameController().edit(req, res));

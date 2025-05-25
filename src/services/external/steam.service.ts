@@ -132,4 +132,21 @@ export class SteamService {
             throw new Error("Failed to fetch achievements from Steam");
         }
     }
+
+    async searchGameByName(gameName: string): Promise<Partial<Game[]> | null> {
+        try {
+            const gamesResponse: any = await axios.get(`https://store.steampowered.com/api/storesearch/?term=${gameName}&cc=br`);
+
+            return gamesResponse.data.items.map((game: any) => {
+                return {
+                    platformId: game.id,
+                    name: game.name,
+                    image: game.tiny_image
+                };
+            });
+        } catch (error) {
+            console.error("Error searching game in IGDB:", error);
+            throw new Error("Failed to search game in IGDB");
+        }
+    }
 }
