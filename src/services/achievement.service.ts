@@ -172,16 +172,23 @@ export class AchievementService {
         }
     }
 
-    async edit(id: string, achievementData: Partial<Achievement>): Promise<Achievement | null> {
+    async editMultiple(achievements: Partial<Achievement>[]): Promise<Achievement[] | null> {
         try {
-            const achievement = await this.achievementRepository.findOneBy({ id });
+            const updatedAchievements = [];
+            const dbAchievements = await this.achievementRepository.findBy({ gameId: achievements[0].gameId });
 
-            if (!achievement) {
-                throw new NotFoundError("Achievement not found");
+            for (const achievement of achievements) {
+                const dbAchievement = dbAchievements.find((a) => a.id === achievement.id);
+
+                if (!dbAchievement) {
+                    throw new NotFoundError("Achievement not found");
+                }
+
+                Object.assign(dbAchievement, achievement);
+                updatedAchievements.push(achievement);
             }
 
-            Object.assign(achievement, achievementData);
-            return await this.achievementRepository.save(achievement);
+            return await this.achievementRepository.save(updatedAchievements);
         } catch (error) {
             if (error instanceof NotFoundError) {
                 throw error;

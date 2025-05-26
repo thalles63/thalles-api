@@ -131,15 +131,18 @@ export class GameService {
                 where: { gameId: id, isAchieved: true }
             });
 
-            if (gameData.isManualRegister && achievements?.length) {
+            if (achievements?.length) {
                 const mostRecent = achievements.reduce((newer: any, item: any) => {
                     return new Date(item.dateAchieved).getTime() > new Date(newer.dateAchieved).getTime() ? item : newer;
                 });
 
-                gameData.lastTimePlayed = mostRecent.dateAchieved;
                 gameData.lastUnlock = mostRecent.dateAchieved;
-            }
 
+                if (gameData.isManualRegister) {
+                    gameData.lastTimePlayed = mostRecent.dateAchieved;
+                }
+            }
+            
             gameData.timePlayed ??= 0;
 
             Object.assign(game, gameData);

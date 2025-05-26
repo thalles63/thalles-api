@@ -11,10 +11,7 @@ export class EditMultipleAchievementsController {
     async editMultiple(req: Request, res: Response): Promise<void> {
         const achievements = req.body;
 
-        const updatedAchievements = [];
-        for (let achievement of achievements) {
-            updatedAchievements.push(await this.achievementService.edit(achievement.id, achievement));
-        }
+        const updatedAchievements = await this.achievementService.editMultiple(achievements);
 
         res.json(updatedAchievements);
     }
