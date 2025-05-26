@@ -85,7 +85,7 @@ export class IgdbService {
                 "https://api.igdb.com/v4/games",
                 `search "${gameName}"; 
                 fields name,cover.url,screenshots.url, summary;
-                limit 5;`,
+                limit 20;`,
                 {
                     headers: {
                         "Client-ID": config.igdb.clientId,
