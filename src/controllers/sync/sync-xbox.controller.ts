@@ -56,9 +56,11 @@ export class SyncXboxGameController {
 
             await this.achievementsService.updateAchievements(achievements, game.id);
 
-            const mostRecent = achievements.reduce((newer: any, item: any) => {
-                return new Date(item.dateAchieved) > new Date(newer.dateAchieved) ? item : newer;
-            });
+            const mostRecent = achievements
+                .filter((a) => !!a.dateAchieved)
+                .reduce((newer: any, item: any) => {
+                    return new Date(item.dateAchieved).getTime() > new Date(newer.dateAchieved).getTime() ? item : newer;
+                });
             const gamePontuation = achievements.reduce((sum, item) => sum + Number(item.type), 0);
             const is1000g = gamePontuation >= 1000;
 

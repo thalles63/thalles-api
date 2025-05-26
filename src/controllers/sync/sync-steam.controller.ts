@@ -64,9 +64,11 @@ export class SyncSteamGameController {
                 continue;
             }
 
-            const mostRecent = achievements.reduce((newer: any, item: any) => {
-                return new Date(item.dateAchieved).getTime() > new Date(newer.dateAchieved).getTime() ? item : newer;
-            });
+            const mostRecent = achievements
+                .filter((a) => !!a.dateAchieved)
+                .reduce((newer: any, item: any) => {
+                    return new Date(item.dateAchieved).getTime() > new Date(newer.dateAchieved).getTime() ? item : newer;
+                });
 
             game.lastTimePlayed = mostRecent.dateAchieved!;
             game.lastUnlock = mostRecent.dateAchieved;
