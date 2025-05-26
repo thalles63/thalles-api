@@ -5,6 +5,7 @@ import { AchievementService } from "../../services/achievement.service";
 import { SteamService } from "../../services/external/steam.service";
 import { GameService } from "../../services/game.service";
 import { PlatformEnum } from "../../utils/enums/platform.enum";
+import { StatusEnum } from "../../utils/enums/status.enum";
 
 export class SyncSteamGameController {
     private readonly gameService: GameService;
@@ -40,6 +41,7 @@ export class SyncSteamGameController {
 
             game.timePlayed = gameWithTimePlayed?.timePlayed!;
             game.lastTimePlayed = undefined;
+            game.status = StatusEnum.Playing;
 
             if (!achievements?.length) {
                 await this.gameService.edit(game.id, game);
@@ -78,7 +80,7 @@ export class SyncSteamGameController {
             if (is100Percent) {
                 game.isCampaignComplete = true;
                 game.isPlatinumed = true;
-                game.status = 2;
+                game.status = StatusEnum.Completed;
             }
 
             await this.gameService.edit(game.id, game);

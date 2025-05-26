@@ -5,6 +5,7 @@ import { AchievementService } from "../../services/achievement.service";
 import { PlayStationService } from "../../services/external/playstation.service";
 import { GameService } from "../../services/game.service";
 import { PlatformEnum } from "../../utils/enums/platform.enum";
+import { StatusEnum } from "../../utils/enums/status.enum";
 
 export class SyncPsnGameController {
     private readonly gameService: GameService;
@@ -40,6 +41,7 @@ export class SyncPsnGameController {
 
             game.lastTimePlayed = gameWithTimePlayed?.lastTimePlayed;
             game.timePlayed = gameWithTimePlayed?.timePlayed!;
+            game.status = StatusEnum.Playing;
 
             if (!achievements.length) {
                 await this.gameService.edit(game.id, game);
@@ -61,7 +63,7 @@ export class SyncPsnGameController {
             if (platinumAchievement) {
                 game.isPlatinumed = true;
                 game.isCampaignComplete = true;
-                game.status = 2;
+                game.status = StatusEnum.Completed;
             }
 
             await this.gameService.edit(game.id, game);

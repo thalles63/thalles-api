@@ -6,6 +6,7 @@ import { AchievementService } from "../../services/achievement.service";
 import { XboxService } from "../../services/external/xbox.service";
 import { GameService } from "../../services/game.service";
 import { PlatformEnum } from "../../utils/enums/platform.enum";
+import { StatusEnum } from "../../utils/enums/status.enum";
 
 export class SyncXboxGameController {
     private readonly gameService: GameService;
@@ -48,6 +49,7 @@ export class SyncXboxGameController {
             const gameWithTimePlayed = gamesFromXboxLiveApi.find((g) => g.platformId === game.platformId);
             game.lastTimePlayed = gameWithTimePlayed?.lastTimePlayed;
             game.lastUnlock = gameWithTimePlayed?.lastTimePlayed;
+            game.status = StatusEnum.Playing;
 
             if (!achievements.length) {
                 await this.gameService.edit(game.id, game);
@@ -67,7 +69,7 @@ export class SyncXboxGameController {
             if (is1000g) {
                 game.isCampaignComplete = true;
                 game.isPlatinumed = true;
-                game.status = 2;
+                game.status = StatusEnum.Completed;
             }
 
             game.lastUnlock = mostRecent.dateAchieved;
