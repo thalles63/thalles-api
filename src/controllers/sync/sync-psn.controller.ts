@@ -85,7 +85,8 @@ export class SyncPsnGameController {
         ).games;
 
         return listOfGamesFromApi.filter(
-            (game) => new Date(gamesFromPsn.find((g) => g.psnId === game.psnId)!.lastTimePlayed!).getTime() !== new Date(game.lastTimePlayed!).getTime()
+            (game) =>
+                game.psnId && new Date(gamesFromPsn.find((g) => g.psnId === game.psnId)!.lastTimePlayed!).getTime() !== new Date(game.lastTimePlayed!).getTime()
         );
     }
 

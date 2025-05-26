@@ -96,6 +96,8 @@ export class SyncSteamGameController {
         const listOfGamesFromApi = (await this.gameService.list({ page: 1, limit: 300, order: {} }, { isPlatinumed: false, platform: PlatformEnum.Steam }))
             .games;
 
-        return listOfGamesFromApi.filter((game) => gamesFromSteam.find((g) => g.platformId === game.platformId)!.timePlayed !== game.timePlayed);
+        return listOfGamesFromApi.filter(
+            (game) => game.platformId && gamesFromSteam.find((g) => g.platformId === game.platformId)?.timePlayed !== game.timePlayed
+        );
     }
 }

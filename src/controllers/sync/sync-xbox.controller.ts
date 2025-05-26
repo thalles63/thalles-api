@@ -87,7 +87,7 @@ export class SyncXboxGameController {
             .games;
 
         return listOfGamesFromApi.filter((game) => {
-            const lastTimePlayed = gamesFromXbox.find((g) => g.platformId === game.platformId)?.lastTimePlayed;
+            const lastTimePlayed = game.platformId && gamesFromXbox.find((g) => g.platformId === game.platformId)!.lastTimePlayed;
 
             if (!lastTimePlayed) {
                 return !!lastTimePlayed !== !!game.lastTimePlayed;
