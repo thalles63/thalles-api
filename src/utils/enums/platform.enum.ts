@@ -3,5 +3,6 @@ export enum PlatformEnum {
     Playstation5 = 2,
     Playstation4 = 3,
     Xbox = 4,
-    Steam = 5
+    Steam = 5,
+    Playstation3 = 6
 }
