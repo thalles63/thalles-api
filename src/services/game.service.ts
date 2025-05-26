@@ -55,7 +55,6 @@ export class GameService {
                 description: igdbGame.description,
                 platformId: game.platformId,
                 platform: game.platform,
-                dateCompleted: game.dateCompleted,
                 isPlatinumed: game.isPlatinumed || false,
                 isCampaignComplete: game.isCampaignComplete || false,
                 rating: 0,
@@ -84,7 +83,6 @@ export class GameService {
                 description: game.description,
                 timePlayed: game.timePlayed ?? 0,
                 isPlatinumed: game.isPlatinumed ?? false,
-                dateCompleted: game.dateCompleted,
                 isCampaignComplete: game.isCampaignComplete ?? false,
                 screenshot: game.screenshot,
                 isManualRegister: true,
@@ -142,7 +140,7 @@ export class GameService {
                     gameData.lastTimePlayed = mostRecent.dateAchieved;
                 }
             }
-            
+
             gameData.timePlayed ??= 0;
 
             Object.assign(game, gameData);

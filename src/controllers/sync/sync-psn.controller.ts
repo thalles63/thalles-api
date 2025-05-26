@@ -60,7 +60,6 @@ export class SyncPsnGameController {
                 game.isPlatinumed = true;
                 game.isCampaignComplete = true;
                 game.status = 2;
-                game.dateCompleted = platinumAchievement.dateAchieved!;
             }
 
             await this.gameService.edit(game.id, game);

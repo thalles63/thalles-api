@@ -11,10 +11,6 @@ export class FindByIdGameController {
     public async findById(req: Request, res: Response): Promise<void> {
         const game = await this.gameService.getById(req.params.id);
 
-        if (game?.dateCompleted?.toISOString() === "1970-01-01T00:00:00.000Z") {
-            game.dateCompleted = undefined!;
-        }
-
         if (game?.achievements?.length) {
             game.achievements = game.achievements.map((a) => {
                 if (a?.dateAchieved?.toISOString() === "1970-01-01T00:00:00.000Z") {

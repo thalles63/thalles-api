@@ -77,7 +77,6 @@ export class SyncSteamGameController {
                 game.isCampaignComplete = true;
                 game.isPlatinumed = true;
                 game.status = 2;
-                game.dateCompleted = mostRecent.dateAchieved!;
             }
 
             await this.gameService.edit(game.id, game);

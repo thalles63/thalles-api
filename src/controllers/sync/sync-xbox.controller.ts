@@ -66,8 +66,9 @@ export class SyncXboxGameController {
                 game.isCampaignComplete = true;
                 game.isPlatinumed = true;
                 game.status = 2;
-                game.dateCompleted = mostRecent.dateAchieved!;
             }
+
+            game.lastUnlock = mostRecent.dateAchieved;
 
             await this.gameService.edit(game.id, game);
         }
@@ -84,7 +85,7 @@ export class SyncXboxGameController {
             .games;
 
         return listOfGamesFromApi.filter((game) => {
-            const lastTimePlayed = gamesFromXbox.find((g) => g.platformId === game.platformId)!.lastTimePlayed;
+            const lastTimePlayed = gamesFromXbox.find((g) => g.platformId === game.platformId)?.lastTimePlayed;
 
             if (!lastTimePlayed) {
                 return !!lastTimePlayed !== !!game.lastTimePlayed;
