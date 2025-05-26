@@ -154,16 +154,9 @@ export class AchievementService {
         }
     }
 
-    async delete(id: string): Promise<boolean> {
+    async delete(ids: string[]) {
         try {
-            const achievement = await this.achievementRepository.findOneBy({ id });
-
-            if (!achievement) {
-                throw new NotFoundError("Achievement not found");
-            }
-
-            await this.achievementRepository.delete(id);
-            return true;
+            return await this.achievementRepository.delete(ids);
         } catch (error) {
             if (error instanceof NotFoundError) {
                 throw error;

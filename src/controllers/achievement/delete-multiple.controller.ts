@@ -11,10 +11,8 @@ export class DeleteMultipleAchievementsController {
     public async deleteMultiple(req: Request, res: Response): Promise<void> {
         const ids = req.body.ids;
 
-        for (let id of ids) {
-            await this.achievementService.delete(id);
-        }
+        const result = await this.achievementService.delete(ids);
 
-        res.json({ message: "Achievements successfully deleted" });
+        res.json({ message: "Achievements successfully deleted", result });
     }
 }
