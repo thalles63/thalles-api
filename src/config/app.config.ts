@@ -23,7 +23,9 @@ export const config = {
         clientId: process.env.IGDB_CLIENT_ID,
         clientSecret: process.env.IGDB_CLIENT_SECRET
     },
-
+    scrapper: {
+        key: process.env.SCRAPER_API_KEY
+    },
     logging: {
         level: process.env.LOG_LEVEL ?? "info"
     }

@@ -4,8 +4,8 @@ import { EditGameController } from "../../controllers/game/edit.controller";
 import { FindByIdGameController } from "../../controllers/game/find-by-id.controller";
 import { ListGameController } from "../../controllers/game/list.controller";
 import { SaveGameController } from "../../controllers/game/save.controller";
-import { SearchIgdbController } from "../../controllers/game/search-igdb";
-import { SearchSteamController } from "../../controllers/game/search-steam";
+import { SearchIgdbController } from "../../controllers/game/search-igdb.controller";
+import { SearchSteamController } from "../../controllers/game/search-steam.controller";
 import { authMiddleware } from "../../utils/auth.middleware";
 
 const router = Router();

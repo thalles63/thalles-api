@@ -16,7 +16,7 @@ export class Achievement {
     description: string;
 
     @Column({ nullable: true })
-    type: string;
+    type?: string;
 
     @Column({ nullable: true })
     image: string;
@@ -25,7 +25,7 @@ export class Achievement {
     isAchieved: boolean;
 
     @Column({ nullable: true })
-    dateAchieved: Date;
+    dateAchieved?: Date;
 
     @Column({ type: "decimal", precision: 5, scale: 2, default: 0 })
     percentageAchieved: number;

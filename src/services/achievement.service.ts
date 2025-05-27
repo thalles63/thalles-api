@@ -198,7 +198,7 @@ export class AchievementService {
                 description: achievement.description,
                 image: achievement.image,
                 name: achievement.name,
-                type: "0",
+                type: achievement.type ?? "0",
                 isAchieved: achievement.isAchieved,
                 dateAchieved: achievement.dateAchieved,
                 percentageAchieved: Number(achievement.percentageAchieved ?? 0)
