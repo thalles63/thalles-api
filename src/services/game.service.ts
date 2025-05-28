@@ -1,8 +1,10 @@
-import { Repository } from "typeorm";
+import { In, Repository } from "typeorm";
 import { appDataSource } from "../config/database.config";
 import { Achievement } from "../entities/achievements.entity";
 import { Game } from "../entities/games.entity";
+import { ListFilters } from "../interfaces/list-filters.interface";
 import { NotFoundError, ValidationError } from "../utils/errors/errors";
+import { GameSort } from "../utils/sorts/game.sort";
 import { IgdbService } from "./external/igdb.service";
 
 export class GameService {
@@ -16,16 +18,61 @@ export class GameService {
         this.igdbService = new IgdbService();
     }
 
-    async list(pageOptions = { page: 1, limit: 10, order: {} }, where: any = {}, includeDeleted: boolean = false): Promise<{ games: Game[]; total: number }> {
-        const [games, total] = await this.gameRepository.findAndCount({
-            where,
-            skip: (pageOptions.page - 1) * pageOptions.limit,
-            take: pageOptions.limit,
-            order: pageOptions.order,
-            withDeleted: includeDeleted
-        });
+    async list(pageOptions = { page: 1, limit: 10, order: 2 }, where = <ListFilters>{}, includeDeleted: boolean = false) {
+        const query = this.gameRepository
+            .createQueryBuilder("games")
+            .skip((pageOptions.page - 1) * pageOptions.limit)
+            .take(pageOptions.limit);
+
+        const filters = this.assignFilters(where);
+
+        if (Object.keys(filters).length) {
+            query.where(filters);
+        }
+
+        if (pageOptions.order) {
+            if (pageOptions.order === GameSort.Name) {
+                query.orderBy("LOWER(games.name)", "ASC");
+            }
+
+            if (pageOptions.order === GameSort.LastUnlock) {
+                query.orderBy("games.lastUnlock", "DESC");
+                query.addOrderBy("LOWER(games.name)", "ASC");
+            }
+
+            if (pageOptions.order === GameSort.Rating) {
+                query.orderBy("games.rating", "DESC");
+                query.addOrderBy("games.lastUnlock", "DESC");
+            }
+        }
+
+        if (includeDeleted) {
+            query.withDeleted();
+        }
+
+        const [games, total] = await query.getManyAndCount();
 
         return { games, total };
+    }
+
+    private assignFilters(where: ListFilters) {
+        const filters: any = {};
+
+        if (where.status) {
+            const statusValues = Number(where.status) === 5 ? [1, 2] : [Number(where.status)];
+            filters.status = In(statusValues);
+        }
+
+        if (where.platform) {
+            const platformValues = Array.isArray(where.platform) ? where.platform : [where.platform];
+            filters.platform = In(platformValues);
+        }
+
+        if (where.isPlatinumed) {
+            filters.isPlatinumed = where.isPlatinumed;
+        }
+
+        return filters;
     }
 
     async getById(id: string): Promise<Game | null> {

@@ -1,11 +1,12 @@
 import { Request, Response } from "express";
-import { In } from "typeorm";
 import { Game } from "../../entities/games.entity";
+import { ListFilters } from "../../interfaces/list-filters.interface";
 import { AchievementService } from "../../services/achievement.service";
 import { PlayStationService } from "../../services/external/playstation.service";
 import { GameService } from "../../services/game.service";
 import { PlatformEnum } from "../../utils/enums/platform.enum";
 import { StatusEnum } from "../../utils/enums/status.enum";
+import { GameSort } from "../../utils/sorts/game.sort";
 
 export class SyncPsnGameController {
     private readonly gameService: GameService;
@@ -73,18 +74,13 @@ export class SyncPsnGameController {
     }
 
     private async getIdsOfGamesSavedInApi() {
-        return (
-            await this.gameService.list({ page: 1, limit: 300, order: {} }, { platform: In([PlatformEnum.Playstation4, PlatformEnum.Playstation5]) }, true)
-        ).games.map((game) => game.igdbId);
+        const filters = <ListFilters>{ platform: [PlatformEnum.Playstation4, PlatformEnum.Playstation5] };
+        return (await this.gameService.list({ page: 1, limit: 300, order: GameSort.Name }, filters, true)).games.map((game) => game.igdbId);
     }
 
     private async getListOfGameIdsToUpdateAchievements(gamesFromPsn: Partial<Game>[]) {
-        const listOfGamesFromApi = (
-            await this.gameService.list(
-                { page: 1, limit: 300, order: {} },
-                { isPlatinumed: false, platform: In([PlatformEnum.Playstation4, PlatformEnum.Playstation5]) }
-            )
-        ).games;
+        const filters = <ListFilters>{ isPlatinumed: false, platform: [PlatformEnum.Playstation4, PlatformEnum.Playstation5] };
+        const listOfGamesFromApi = (await this.gameService.list({ page: 1, limit: 300, order: GameSort.Name }, filters)).games;
 
         return listOfGamesFromApi.filter(
             (game) =>

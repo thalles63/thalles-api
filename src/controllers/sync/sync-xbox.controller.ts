@@ -1,12 +1,14 @@
 import { Request, Response } from "express";
 import { Achievement } from "../../entities/achievements.entity";
 import { Game } from "../../entities/games.entity";
+import { ListFilters } from "../../interfaces/list-filters.interface";
 import { XboxAchievement } from "../../interfaces/xbox-achievement.interface";
 import { AchievementService } from "../../services/achievement.service";
 import { XboxService } from "../../services/external/xbox.service";
 import { GameService } from "../../services/game.service";
 import { PlatformEnum } from "../../utils/enums/platform.enum";
 import { StatusEnum } from "../../utils/enums/status.enum";
+import { GameSort } from "../../utils/sorts/game.sort";
 
 export class SyncXboxGameController {
     private readonly gameService: GameService;
@@ -81,12 +83,13 @@ export class SyncXboxGameController {
     }
 
     private async getIdsOfGamesSavedInApi() {
-        return (await this.gameService.list({ page: 1, limit: 300, order: {} }, { platform: PlatformEnum.Xbox }, true)).games.map((game) => game.platformId);
+        const filter = <ListFilters>{ platform: PlatformEnum.Xbox };
+        return (await this.gameService.list({ page: 1, limit: 300, order: GameSort.Name }, filter, true)).games.map((game) => game.platformId);
     }
 
     private async getListOfGameIdsToUpdateAchievements(gamesFromXbox: Partial<Game>[]) {
-        const listOfGamesFromApi = (await this.gameService.list({ page: 1, limit: 300, order: {} }, { isPlatinumed: false, platform: PlatformEnum.Xbox }))
-            .games;
+        const filter = <ListFilters>{ isPlatinumed: false, platform: PlatformEnum.Xbox };
+        const listOfGamesFromApi = (await this.gameService.list({ page: 1, limit: 300, order: GameSort.Name }, filter)).games;
 
         return listOfGamesFromApi.filter((game) => {
             const lastTimePlayed = game.platformId && gamesFromXbox.find((g) => g.platformId === game.platformId)!.lastTimePlayed;

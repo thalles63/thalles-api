@@ -1,12 +1,5 @@
-export const GameSort = {
-    "1": {
-        name: "ASC"
-    },
-    "2": {
-        lastUnlock: "DESC",
-        name: "ASC"
-    },
-    "3": {
-        rating: "DESC"
-    }
-};
+export enum GameSort {
+    Name = 1,
+    LastUnlock = 2,
+    Rating = 4
+}
