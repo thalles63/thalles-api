@@ -7,8 +7,11 @@ import {
     getUserPlayedGames,
     getUserTrophiesEarnedForTitle
 } from "psn-api";
+import { Repository } from "typeorm";
 import { config } from "../../config/app.config";
+import { appDataSource } from "../../config/database.config";
 import { Achievement } from "../../entities/achievements.entity";
+import { Config } from "../../entities/config.entity";
 import { Game } from "../../entities/games.entity";
 import { PlatformEnum } from "../../utils/enums/platform.enum";
 
@@ -18,6 +21,11 @@ export class PlayStationService {
         refreshToken: "",
         expiresIn: ""
     };
+    private readonly configRepository: Repository<Config>;
+
+    constructor() {
+        this.configRepository = appDataSource.getRepository(Config);
+    }
 
     async getUserGames(): Promise<Partial<Game>[]> {
         try {
@@ -127,7 +135,7 @@ export class PlayStationService {
             return this.token.accessToken;
         }
 
-        const myNpsso = config.psn.npssoToken!;
+        const myNpsso = (await this.getNpssoFromDatabase())!;
         const accessCode = await exchangeNpssoForAccessCode(myNpsso);
         const authorization = await exchangeAccessCodeForAuthTokens(accessCode);
 
@@ -136,6 +144,10 @@ export class PlayStationService {
         this.token.expiresIn = new Date(new Date().getTime() + authorization.expiresIn * 1000).toISOString();
 
         return authorization.accessToken;
+    }
+
+    private async getNpssoFromDatabase() {
+        return (await this.configRepository.findOneBy({ key: "npsso" }))?.value;
     }
 
     private async fetchPaginatedData(fetchFn: Function, limit = 200) {

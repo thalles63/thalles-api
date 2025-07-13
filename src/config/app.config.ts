@@ -8,7 +8,6 @@ export const config = {
         env: process.env.NODE_ENV ?? "DEV"
     },
     psn: {
-        npssoToken: process.env.NPSSO_TOKEN,
         accountId: process.env.ACCOUNT_ID
     },
     xbox: {
