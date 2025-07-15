@@ -8,6 +8,7 @@ import { AppError } from "./utils/errors/errors";
 import logger from "./utils/logger/logger";
 
 const app = express();
+process.env.TZ = "UTC";
 
 appDataSource
     .initialize()

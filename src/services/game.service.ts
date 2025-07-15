@@ -102,6 +102,7 @@ export class GameService {
                 description: igdbGame.description,
                 platformId: game.platformId,
                 platform: game.platform,
+                retroConsole: game.retroConsole,
                 isPlatinumed: game.isPlatinumed || false,
                 isCampaignComplete: game.isCampaignComplete || false,
                 rating: 0,

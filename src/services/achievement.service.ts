@@ -4,6 +4,7 @@ import { Achievement } from "../entities/achievements.entity";
 import { Game } from "../entities/games.entity";
 import { NotFoundError, ValidationError } from "../utils/errors/errors";
 import { PlayStationService } from "./external/playstation.service";
+import { RetroAchievementsService } from "./external/retro-achievements.service";
 import { SteamService } from "./external/steam.service";
 import { XboxService } from "./external/xbox.service";
 
@@ -12,12 +13,14 @@ export class AchievementService {
     private readonly playstationService: PlayStationService;
     private readonly xboxService: XboxService;
     private readonly steamService: SteamService;
+    private readonly retroAchievementsService: RetroAchievementsService;
 
     constructor() {
         this.achievementRepository = appDataSource.getRepository(Achievement);
         this.playstationService = new PlayStationService();
         this.xboxService = new XboxService();
         this.steamService = new SteamService();
+        this.retroAchievementsService = new RetroAchievementsService();
     }
 
     async saveFromPsn(game: Partial<Game>) {
@@ -90,6 +93,32 @@ export class AchievementService {
                     isAchieved: false,
                     dateAchieved: undefined,
                     percentageAchieved: Number(percentage ?? 0)
+                });
+
+                achievementsList.push(newAchievement);
+            }
+
+            return await this.achievementRepository.save(achievementsList);
+        } catch (error) {
+            throw new Error(`Failed to save achievements: ${error instanceof Error ? error.message : "Unknown error"}`);
+        }
+    }
+
+    async saveFromRetroAchievements(game: Game) {
+        try {
+            const achievements = await this.retroAchievementsService.getListOfAchievements(game);
+
+            const achievementsList: Achievement[] = [];
+            for (const achievement of Object.values(achievements)) {
+                const newAchievement = this.achievementRepository.create({
+                    gameId: game.id,
+                    platformId: achievement.id.toString(),
+                    description: achievement.description,
+                    image: `https://media.retroachievements.org/Badge/${achievement.badgeName}.png`,
+                    name: achievement.title,
+                    type: achievement.points.toString(),
+                    isAchieved: false,
+                    percentageAchieved: 0
                 });
 
                 achievementsList.push(newAchievement);

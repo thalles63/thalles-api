@@ -25,6 +25,10 @@ export const config = {
     scrapper: {
         key: process.env.SCRAPER_API_KEY
     },
+    retroAchievements: {
+        username: process.env.RA_USERNAME,
+        apiKey: process.env.RA_API_KEY
+    },
     logging: {
         level: process.env.LOG_LEVEL ?? "info"
     }

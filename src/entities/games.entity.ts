@@ -45,6 +45,9 @@ export class Game {
     @Column({ nullable: true })
     screenshot: string;
 
+    @Column({ nullable: true })
+    retroConsole: number;
+
     @Column({ default: false })
     isManualRegister: boolean;
 
