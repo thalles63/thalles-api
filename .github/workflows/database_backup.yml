@@ -1,0 +1,32 @@
+name: Weekly Neon Backup to Google Drive
+
+on:
+  schedule:
+    - cron: '0 2 * * 0' # Domingo às 2h UTC
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Instala PostgreSQL client e rclone
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client rclone
+
+      - name: Cria arquivo de config do rclone
+        run: |
+          mkdir -p ~/.config/rclone
+          echo "${{ secrets.RCLONE_CONFIG }}" > ~/.config/rclone/rclone.conf
+
+      - name: Dump do banco Neon
+        env:
+          DATABASE_URL: ${{ secrets.NEON_URL }}
+        run: |
+          pg_dump $DATABASE_URL > backup.sql
+
+      - name: Upload para Google Drive
+        run: |
+          FOLDER="neon_backups"
+          TIMESTAMP=$(date +%Y-%m-%d_%H-%M)
+          rclone mkdir gdrive:$FOLDER
+          rclone copy backup.sql gdrive:$FOLDER/backup_$TIMESTAMP.sql
