@@ -2,27 +2,35 @@ name: Weekly Neon Backup to Google Drive
 
 on:
   schedule:
-    - cron: '0 2 * * 0' # Domingo às 2h UTC
+    - cron: '0 2 * * 0'  # todo domingo às 2h UTC
+  workflow_dispatch:     # permite rodar manualmente
 
 jobs:
   backup:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Instala PostgreSQL client e rclone
+      - name: Instala rclone
         run: |
           sudo apt-get update
-          sudo apt-get install -y postgresql-client rclone
+          sudo apt-get install -y rclone
 
-      - name: Cria arquivo de config do rclone
+      - name: Verifica versão do Docker
+        run: docker --version
+
+      - name: Cria config do rclone (multiline seguro)
         run: |
           mkdir -p ~/.config/rclone
-          echo "${{ secrets.RCLONE_CONFIG }}" > ~/.config/rclone/rclone.conf
+          cat <<EOF > ~/.config/rclone/rclone.conf
+          ${{ secrets.RCLONE_CONFIG }}
+          EOF
 
-      - name: Dump do banco Neon
+      - name: Faz dump do banco Neon usando container PostgreSQL 17
         env:
           DATABASE_URL: ${{ secrets.NEON_URL }}
         run: |
-          pg_dump $DATABASE_URL > backup.sql
+          docker run --rm -e PGPASSWORD=$(echo $DATABASE_URL | sed -E 's/.*:(.*)@.*/\1/' | cut -d'@' -f1) postgres:17 \
+          sh -c "pg_dump \"$DATABASE_URL\"" > backup.sql
 
       - name: Upload para Google Drive
         run: |
