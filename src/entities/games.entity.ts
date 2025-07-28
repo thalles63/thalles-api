@@ -1,5 +1,7 @@
-import { Column, CreateDateColumn, DeleteDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinTable, ManyToMany, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { Achievement } from "./achievements.entity";
+import { Genre } from "./genre.entity";
+import { Theme } from "./theme.entity";
 
 @Entity("games")
 export class Game {
@@ -60,8 +62,33 @@ export class Game {
     @Column({ nullable: true })
     lastTimePlayed?: Date;
 
+    @Column({ nullable: true })
+    releaseDate?: Date;
+
+    @Column({ nullable: true })
+    developer: string;
+
+    @Column({ nullable: true })
+    publisher: string;
+
     @OneToMany(() => Achievement, (achievement) => achievement.game)
     achievements: Achievement[];
+
+    @ManyToMany(() => Genre, (genre) => genre.games, { cascade: true })
+    @JoinTable({
+        name: "gamesGenres",
+        joinColumn: { name: "gameId", referencedColumnName: "id" },
+        inverseJoinColumn: { name: "genreId", referencedColumnName: "id" }
+    })
+    genres: Genre[];
+
+    @ManyToMany(() => Theme, (theme) => theme.games, { cascade: true })
+    @JoinTable({
+        name: "gamesThemes",
+        joinColumn: { name: "gameId", referencedColumnName: "id" },
+        inverseJoinColumn: { name: "themeId", referencedColumnName: "id" }
+    })
+    themes: Theme[];
 
     @DeleteDateColumn()
     deletedAt: Date;

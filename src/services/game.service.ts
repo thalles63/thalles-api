@@ -2,6 +2,8 @@ import { In, Repository } from "typeorm";
 import { appDataSource } from "../config/database.config";
 import { Achievement } from "../entities/achievements.entity";
 import { Game } from "../entities/games.entity";
+import { Genre } from "../entities/genre.entity";
+import { Theme } from "../entities/theme.entity";
 import { ListFilters } from "../interfaces/list-filters.interface";
 import { NotFoundError, ValidationError } from "../utils/errors/errors";
 import { GameSort } from "../utils/sorts/game.sort";
@@ -11,10 +13,15 @@ export class GameService {
     private readonly gameRepository: Repository<Game>;
     private readonly igdbService: IgdbService;
     private readonly achievementRepository: Repository<Achievement>;
+    private readonly genreRepository: Repository<Genre>;
+    private readonly themeRepository: Repository<Theme>;
 
     constructor() {
         this.gameRepository = appDataSource.getRepository(Game);
         this.achievementRepository = appDataSource.getRepository(Achievement);
+        this.genreRepository = appDataSource.getRepository(Genre);
+        this.themeRepository = appDataSource.getRepository(Theme);
+
         this.igdbService = new IgdbService();
     }
 
@@ -76,7 +83,7 @@ export class GameService {
     }
 
     async getById(id: string): Promise<Game | null> {
-        return await this.gameRepository.findOne({ where: { id }, relations: ["achievements"] });
+        return await this.gameRepository.findOne({ where: { id }, relations: ["achievements", "themes", "genres"] });
     }
 
     async saveFromWeb(game: Partial<Game>, skipIgdb = false) {
@@ -93,6 +100,14 @@ export class GameService {
                 }
             }
 
+            const genres = await this.genreRepository.findBy({
+                slug: In(igdbGame.genres?.map((genre) => genre.slug) || [])
+            });
+
+            const themes = await this.themeRepository.findBy({
+                slug: In(igdbGame.themes?.map((theme) => theme.slug) || [])
+            });
+
             const newGame = this.gameRepository.create({
                 name: game.name,
                 image: igdbGame.image ?? "",
@@ -107,7 +122,12 @@ export class GameService {
                 isCampaignComplete: game.isCampaignComplete || false,
                 rating: 0,
                 status: 1,
-                timePlayed: 0
+                timePlayed: 0,
+                releaseDate: igdbGame.releaseDate,
+                genres: genres,
+                themes: themes,
+                developer: igdbGame.developer,
+                publisher: igdbGame.publisher
             });
 
             return await this.gameRepository.save(newGame);
@@ -116,11 +136,19 @@ export class GameService {
         }
     }
 
-    async manualSave(game: Partial<Game>) {
+    async manualSave(game: Partial<any>) {
         try {
             if (!game.name || !game.image || !game.platform) {
                 throw new ValidationError("Missing required fields: name, image, and platform are required");
             }
+
+            const genres = await this.genreRepository.findBy({
+                slug: In(game.genres || [])
+            });
+
+            const themes = await this.themeRepository.findBy({
+                slug: In(game.themes || [])
+            });
 
             const newGame = this.gameRepository.create({
                 igdbId: game.igdbId ?? "",
@@ -135,7 +163,12 @@ export class GameService {
                 screenshot: game.screenshot,
                 isManualRegister: true,
                 status: game.status,
-                rating: game.rating ?? 0
+                rating: game.rating ?? 0,
+                releaseDate: game.releaseDate,
+                genres: genres,
+                themes: themes,
+                developer: game.developer,
+                publisher: game.publisher
             });
 
             return await this.gameRepository.save(newGame);
@@ -191,7 +224,17 @@ export class GameService {
                 }
             }
 
+            const genres = await this.genreRepository.findBy({
+                slug: In(gameData.genres || [])
+            });
+
+            const themes = await this.themeRepository.findBy({
+                slug: In(gameData.themes || [])
+            });
+
             gameData.timePlayed ??= 0;
+            gameData.genres = genres;
+            gameData.themes = themes;
 
             Object.assign(game, gameData);
             return await this.gameRepository.save(game);

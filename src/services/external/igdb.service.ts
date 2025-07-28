@@ -69,7 +69,12 @@ export class IgdbService {
                 name: game.name,
                 image: game.cover?.url ? `https:${game.cover.url.replace("t_thumb", "t_cover_big_2x")}` : "",
                 screenshot: `https:${game.screenshots[0].url.replace("t_thumb", "t_1080p_2x")}`,
-                description: game.summary
+                description: game.summary,
+                releaseDate: new Date(new Date(game.first_release_date * 1000).toISOString().split("T")[0]),
+                genres: game.genres?.map((genre: any) => genre.slug),
+                themes: game.themes?.map((theme: any) => theme.slug),
+                developer: game.involved_companies?.find((company: any) => company.developer)?.company.name,
+                publisher: game.involved_companies?.find((company: any) => company.publisher)?.company.name
             };
         } catch (error) {
             console.error("Error searching game in IGDB:", error);
@@ -83,8 +88,8 @@ export class IgdbService {
 
             const gamesResponse: any = await axios.post(
                 "https://api.igdb.com/v4/games",
-                `search "${gameName}"; 
-                fields name,cover.url,screenshots.url, summary;
+                `search "${gameName}";
+                fields name,cover.url,screenshots.url, summary, first_release_date, franchise.slug, franchise.name, genres.name, genres.slug, themes.name, themes.slug, involved_companies.developer, involved_companies.company.name, involved_companies.publisher;
                 limit 20;`,
                 {
                     headers: {
@@ -95,12 +100,17 @@ export class IgdbService {
                 }
             );
 
-            return gamesResponse.data.map((game: any) => {
+            return gamesResponse.data.map((game: any): Partial<Game> => {
                 return {
                     igdbId: game.id,
                     name: game.name,
+                    releaseDate: game.first_release_date ? new Date(new Date(game.first_release_date * 1000).toISOString().split("T")[0]) : undefined,
+                    genres: game.genres?.map((genre: any) => genre.slug),
+                    themes: game.themes?.map((theme: any) => theme.slug),
+                    developer: game.involved_companies?.find((company: any) => company.developer)?.company.name,
+                    publisher: game.involved_companies?.find((company: any) => company.publisher)?.company.name,
                     image: game.cover?.url ? `https:${game.cover.url.replace("t_thumb", "t_cover_big_2x")}` : "",
-                    screenshot: game.screenshots?.length ? `https:${game.screenshots[0].url.replace("t_thumb", "t_1080p_2x")}` : undefined,
+                    screenshot: game.screenshots?.length ? `https:${game.screenshots[0].url.replace("t_thumb", "t_1080p_2x")}` : "",
                     description: game.summary
                 };
             });
