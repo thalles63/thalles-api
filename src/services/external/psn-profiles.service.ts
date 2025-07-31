@@ -25,7 +25,14 @@ export class PsnProfilesService {
                     const category = $(rowElement).find("td:nth-child(6) img").attr("title");
                     const dateText = $(rowElement).find("td:nth-child(3) .typo-top-date").text();
                     const timeText = $(rowElement).find("td:nth-child(3) .typo-bottom-date").text();
-                    const typoTop = $(rowElement).find("td:nth-child(5) .typo-top").text().trim();
+                    const typoTop = $(rowElement)
+                        .find("td:nth-child(4) .typo-top nobr")
+                        .contents()
+                        .filter(function () {
+                            return this.type === "text";
+                        })
+                        .text()
+                        .trim();
 
                     if (!!imgSrc && !!linkText && !!afterFirstBr && !!typoTop) {
                         achievementLines.push(<Achievement>{

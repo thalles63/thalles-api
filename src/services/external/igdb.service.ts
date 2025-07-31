@@ -89,6 +89,7 @@ export class IgdbService {
             const gamesResponse: any = await axios.post(
                 "https://api.igdb.com/v4/games",
                 `search "${gameName}";
+                where game_type = (0, 3, 4, 8, 9, 10, 11, 13);
                 fields name,cover.url,screenshots.url, summary, first_release_date, franchise.slug, franchise.name, genres.name, genres.slug, themes.name, themes.slug, involved_companies.developer, involved_companies.company.name, involved_companies.publisher;
                 limit 20;`,
                 {
