@@ -86,6 +86,10 @@ export class GameService {
         return await this.gameRepository.findOne({ where: { id }, relations: ["achievements", "themes", "genres"] });
     }
 
+    async countByStatus(status: number): Promise<number | null> {
+        return await this.gameRepository.countBy({ status });
+    }
+
     async saveFromWeb(game: Partial<Game>, skipIgdb = false) {
         try {
             let igdbGame: Partial<Game> | null = {};

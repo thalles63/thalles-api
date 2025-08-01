@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { CountGamesByStatusController } from "../../controllers/game/count-by-status.controller";
 import { DeleteGameController } from "../../controllers/game/delete.controller";
 import { EditGameController } from "../../controllers/game/edit.controller";
 import { FindByIdGameController } from "../../controllers/game/find-by-id.controller";
@@ -11,6 +12,7 @@ import { authMiddleware } from "../../utils/auth.middleware";
 const router = Router();
 
 router.get("/", (req, res) => new ListGameController().list(req, res));
+router.get("/count", (req, res) => new CountGamesByStatusController().count(req, res));
 router.get("/search-igdb", authMiddleware, (req, res) => new SearchIgdbController().search(req, res));
 router.get("/search-steam", authMiddleware, (req, res) => new SearchSteamController().search(req, res));
 router.get("/:id", (req, res) => new FindByIdGameController().findById(req, res));
