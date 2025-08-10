@@ -10,12 +10,26 @@ export class CountGamesByStatusController {
     }
 
     async count(req: Request, res: Response): Promise<void> {
-        const playing = (await this.gameService.countByStatus(StatusEnum.Playing)) ?? 0;
-        const backlog = (await this.gameService.countByStatus(StatusEnum.Backlog)) ?? 0;
-        const completed = (await this.gameService.countByStatus(StatusEnum.Completed)) ?? 0;
-        const shelved = (await this.gameService.countByStatus(StatusEnum.Shelved)) ?? 0;
-        const all = playing + backlog + completed + shelved;
+        const filter = req.body;
 
-        res.json({ playing, backlog, completed, shelved, all });
+        const gamesTotal = await this.gameService.countByStatus(filter);
+        const statusMap: Record<number, keyof typeof counts> = {
+            [StatusEnum.Playing]: "playing",
+            [StatusEnum.Completed]: "completed",
+            [StatusEnum.Shelved]: "shelved",
+            [StatusEnum.Backlog]: "backlog"
+        };
+
+        const counts = { playing: 0, completed: 0, shelved: 0, backlog: 0, all: 0 };
+
+        gamesTotal?.forEach((row) => {
+            const prop = statusMap[row.status];
+            const total = Number(row.total);
+
+            if (prop) counts[prop] = total;
+            counts.all += total;
+        });
+
+        res.json(counts);
     }
 }

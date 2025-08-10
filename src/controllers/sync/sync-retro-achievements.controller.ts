@@ -79,12 +79,12 @@ export class SyncRetroAchievementsController {
 
     private async getIdsOfGamesSavedInApi() {
         const filters = <ListFilters>{ platform: [PlatformEnum.RetroAchievements] };
-        return (await this.gameService.list({ page: 1, limit: 300, order: GameSort.Name }, filters, true)).games.map((game) => game.platformId);
+        return (await this.gameService.list({ page: 1, limit: 300, sort: GameSort.Name }, filters, true)).games.map((game) => game.platformId);
     }
 
     private async getListOfGameIdsToUpdateAchievements(gamesFromRetroAchievements: Partial<Game>[]) {
         const filters = <ListFilters>{ isPlatinumed: false, platform: [PlatformEnum.RetroAchievements] };
-        const listOfGamesFromApi = (await this.gameService.list({ page: 1, limit: 300, order: GameSort.Name }, filters)).games;
+        const listOfGamesFromApi = (await this.gameService.list({ page: 1, limit: 300, sort: GameSort.Name }, filters)).games;
 
         return listOfGamesFromApi.filter((game) => {
             return (

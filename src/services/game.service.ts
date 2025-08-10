@@ -1,4 +1,4 @@
-import { In, Repository } from "typeorm";
+import { In, Raw, Repository } from "typeorm";
 import { appDataSource } from "../config/database.config";
 import { Achievement } from "../entities/achievements.entity";
 import { Game } from "../entities/games.entity";
@@ -25,29 +25,68 @@ export class GameService {
         this.igdbService = new IgdbService();
     }
 
-    async list(pageOptions = { page: 1, limit: 10, order: 2 }, where = <ListFilters>{}, includeDeleted: boolean = false) {
+    async list(pageOptions = { page: 1, limit: 10, sort: 2 }, where = <ListFilters>{}, includeDeleted: boolean = false) {
         const query = this.gameRepository
             .createQueryBuilder("games")
             .skip((pageOptions.page - 1) * pageOptions.limit)
             .take(pageOptions.limit);
 
-        const filters = this.assignFilters(where);
-
-        if (Object.keys(filters).length) {
-            query.where(filters);
+        if (where.status) {
+            query.where({ status: In(Number(where.status) === 5 ? [1, 2] : [Number(where.status)]) });
         }
 
-        if (pageOptions.order) {
-            if (pageOptions.order === GameSort.Name) {
+        if (where.name) {
+            query.andWhere({ name: Raw((alias) => `LOWER(${alias}) Like '%${where.name}%'`) });
+        }
+
+        if (where.platform) {
+            if (!Array.isArray(where.platform)) {
+                where.platform = [where.platform];
+            }
+
+            query.andWhere({ platform: In(where.platform) });
+        }
+
+        if (where.retroConsole) {
+            query.andWhere({ retroConsole: where.retroConsole });
+        }
+
+        if (where.isCampaignComplete !== undefined) {
+            query.andWhere({ isCampaignComplete: where.isCampaignComplete });
+        }
+
+        if (where.isPlatinumed !== undefined) {
+            query.andWhere({ isPlatinumed: where.isPlatinumed });
+        }
+
+        if (where.rating) {
+            query.andWhere({ rating: where.rating });
+        }
+
+        if (where.releaseYear) {
+            const year = Number(where.releaseYear);
+            const start = new Date(Date.UTC(year, 0, 1));
+            const end = new Date(Date.UTC(year + 1, 0, 1));
+            query.andWhere("games.releaseDate >= :start AND games.releaseDate < :end", { start, end });
+        }
+
+        if (where.completionYear) {
+            query
+                .andWhere("EXTRACT(YEAR FROM games.lastUnlock) = :year", { year: where.completionYear })
+                .andWhere("games.isCampaignComplete = :isCampaignComplete", { isCampaignComplete: true });
+        }
+
+        if (pageOptions.sort) {
+            if (pageOptions.sort === GameSort.Name) {
                 query.orderBy("LOWER(games.name)", "ASC");
             }
 
-            if (pageOptions.order === GameSort.LastUnlock) {
+            if (pageOptions.sort === GameSort.LastUnlock) {
                 query.orderBy("games.lastUnlock", "DESC");
                 query.addOrderBy("LOWER(games.name)", "ASC");
             }
 
-            if (pageOptions.order === GameSort.Rating) {
+            if (pageOptions.sort === GameSort.Rating) {
                 query.orderBy("games.rating", "DESC");
                 query.addOrderBy("games.lastUnlock", "DESC");
             }
@@ -62,32 +101,55 @@ export class GameService {
         return { games, total };
     }
 
-    private assignFilters(where: ListFilters) {
-        const filters: any = {};
-
-        if (where.status) {
-            const statusValues = Number(where.status) === 5 ? [1, 2] : [Number(where.status)];
-            filters.status = In(statusValues);
-        }
-
-        if (where.platform) {
-            const platformValues = Array.isArray(where.platform) ? where.platform : [where.platform];
-            filters.platform = In(platformValues);
-        }
-
-        if (where.isPlatinumed) {
-            filters.isPlatinumed = where.isPlatinumed;
-        }
-
-        return filters;
-    }
-
     async getById(id: string): Promise<Game | null> {
         return await this.gameRepository.findOne({ where: { id }, relations: ["achievements", "themes", "genres"] });
     }
 
-    async countByStatus(status: number): Promise<number | null> {
-        return await this.gameRepository.countBy({ status });
+    async countByStatus(filter: ListFilters): Promise<any[] | null> {
+        const qb = this.gameRepository.createQueryBuilder("game").select("game.status", "status").addSelect("COUNT(*)", "total");
+
+        if (filter.name) {
+            qb.andWhere("LOWER(game.name) LIKE LOWER(:name)", { name: filter.name });
+        }
+
+        if (filter.platform) {
+            qb.andWhere("game.platform = :platform", { platform: filter.platform });
+        }
+
+        if (filter.retroConsole) {
+            qb.andWhere("game.retroConsole = :retroConsole", { retroConsole: filter.retroConsole });
+        }
+
+        if (filter.isCampaignComplete !== undefined) {
+            qb.andWhere("game.isCampaignComplete = :isCampaignComplete", { isCampaignComplete: filter.isCampaignComplete });
+        }
+
+        if (filter.isPlatinumed !== undefined) {
+            qb.andWhere("game.isPlatinumed = :isPlatinumed", { isPlatinumed: filter.isPlatinumed });
+        }
+
+        if (filter.rating) {
+            qb.andWhere("game.rating = :rating", { rating: filter.rating });
+        }
+
+        if (filter.releaseYear) {
+            const year = Number(filter.releaseYear);
+            const start = new Date(Date.UTC(year, 0, 1));
+            const end = new Date(Date.UTC(year + 1, 0, 1));
+            qb.andWhere("game.releaseDate >= :start AND game.releaseDate < :end", { start, end });
+        }
+
+        if (filter.completionYear) {
+            qb.andWhere("EXTRACT(YEAR FROM game.lastUnlock) = :year", { year: filter.completionYear }).andWhere(
+                "game.isCampaignComplete = :isCampaignComplete",
+                { isCampaignComplete: true }
+            );
+        }
+
+        qb.groupBy("game.status");
+
+        const raw = await qb.getRawMany();
+        return raw;
     }
 
     async saveFromWeb(game: Partial<Game>, skipIgdb = false) {
@@ -228,17 +290,23 @@ export class GameService {
                 }
             }
 
-            const genres = await this.genreRepository.findBy({
-                slug: In(gameData.genres || [])
-            });
+            if (gameData.genres?.length) {
+                const genres = await this.genreRepository.findBy({
+                    slug: In(gameData.genres || [])
+                });
 
-            const themes = await this.themeRepository.findBy({
-                slug: In(gameData.themes || [])
-            });
+                gameData.genres = genres;
+            }
+
+            if (gameData.themes?.length) {
+                const themes = await this.themeRepository.findBy({
+                    slug: In(gameData.themes || [])
+                });
+
+                gameData.themes = themes;
+            }
 
             gameData.timePlayed ??= 0;
-            gameData.genres = genres;
-            gameData.themes = themes;
 
             Object.assign(game, gameData);
             return await this.gameRepository.save(game);

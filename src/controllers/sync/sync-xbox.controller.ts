@@ -83,13 +83,13 @@ export class SyncXboxGameController {
     }
 
     private async getIdsOfGamesSavedInApi() {
-        const filter = <ListFilters>{ platform: PlatformEnum.Xbox };
-        return (await this.gameService.list({ page: 1, limit: 300, order: GameSort.Name }, filter, true)).games.map((game) => game.platformId);
+        const filter = <ListFilters>{ platform: [PlatformEnum.Xbox] };
+        return (await this.gameService.list({ page: 1, limit: 300, sort: GameSort.Name }, filter, true)).games.map((game) => game.platformId);
     }
 
     private async getListOfGameIdsToUpdateAchievements(gamesFromXbox: Partial<Game>[]) {
         const filter = <ListFilters>{ isPlatinumed: false, platform: PlatformEnum.Xbox };
-        const listOfGamesFromApi = (await this.gameService.list({ page: 1, limit: 300, order: GameSort.Name }, filter)).games;
+        const listOfGamesFromApi = (await this.gameService.list({ page: 1, limit: 300, sort: GameSort.Name }, filter)).games;
 
         return listOfGamesFromApi.filter((game) => {
             const lastTimePlayed = game.platformId && gamesFromXbox.find((g) => g.platformId === game.platformId)!.lastTimePlayed;

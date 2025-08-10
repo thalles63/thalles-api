@@ -11,12 +11,12 @@ import { authMiddleware } from "../../utils/auth.middleware";
 
 const router = Router();
 
-router.get("/", (req, res) => new ListGameController().list(req, res));
-router.get("/count", (req, res) => new CountGamesByStatusController().count(req, res));
 router.get("/search-igdb", authMiddleware, (req, res) => new SearchIgdbController().search(req, res));
 router.get("/search-steam", authMiddleware, (req, res) => new SearchSteamController().search(req, res));
 router.get("/:id", (req, res) => new FindByIdGameController().findById(req, res));
 router.post("/", authMiddleware, (req, res) => new SaveGameController().save(req, res));
+router.post("/list", (req, res) => new ListGameController().list(req, res));
+router.post("/count", (req, res) => new CountGamesByStatusController().count(req, res));
 router.put("/:id", authMiddleware, (req, res) => new EditGameController().edit(req, res));
 router.delete("/:id", authMiddleware, (req, res) => new DeleteGameController().delete(req, res));
 
