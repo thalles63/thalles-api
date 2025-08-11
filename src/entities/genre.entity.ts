@@ -1,5 +1,5 @@
 import { Column, Entity, ManyToMany, PrimaryGeneratedColumn } from "typeorm";
-import { Game } from "./games.entity";
+import type { Game } from "./games.entity";
 
 @Entity("genres")
 export class Genre {
@@ -12,6 +12,6 @@ export class Genre {
     @Column()
     slug: string;
 
-    @ManyToMany(() => Game, (game) => game.genres)
+    @ManyToMany(() => (require("./games.entity") as typeof import("./games.entity")).Game, (game) => game.genres)
     games: Game[];
 }

@@ -1,7 +1,7 @@
 import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinTable, ManyToMany, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
-import { Achievement } from "./achievements.entity";
-import { Genre } from "./genre.entity";
-import { Theme } from "./theme.entity";
+import type { Achievement } from "./achievements.entity";
+import type { Genre } from "./genre.entity";
+import type { Theme } from "./theme.entity";
 
 @Entity("games")
 export class Game {
@@ -71,10 +71,10 @@ export class Game {
     @Column({ nullable: true })
     publisher: string;
 
-    @OneToMany(() => Achievement, (achievement) => achievement.game)
+    @OneToMany(() => (require("./achievements.entity") as typeof import("./achievements.entity")).Achievement, (achievement) => achievement.game)
     achievements: Achievement[];
 
-    @ManyToMany(() => Genre, (genre) => genre.games, { cascade: true })
+    @ManyToMany(() => (require("./genre.entity") as typeof import("./genre.entity")).Genre, (genre) => genre.games, { cascade: true })
     @JoinTable({
         name: "gamesGenres",
         joinColumn: { name: "gameId", referencedColumnName: "id" },
@@ -82,7 +82,7 @@ export class Game {
     })
     genres: Genre[];
 
-    @ManyToMany(() => Theme, (theme) => theme.games, { cascade: true })
+    @ManyToMany(() => (require("./theme.entity") as typeof import("./theme.entity")).Theme, (theme) => theme.games, { cascade: true })
     @JoinTable({
         name: "gamesThemes",
         joinColumn: { name: "gameId", referencedColumnName: "id" },

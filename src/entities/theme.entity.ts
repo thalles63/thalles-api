@@ -12,6 +12,6 @@ export class Theme {
     @Column()
     slug: string;
 
-    @ManyToMany(() => Game, (game) => game.themes)
+    @ManyToMany(() => (require("./games.entity") as typeof import("./games.entity")).Game, (game) => game.genres)
     games: Game[];
 }

@@ -1,5 +1,5 @@
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
-import { Game } from "./games.entity";
+import type { Game } from "./games.entity";
 
 @Entity("achievements")
 export class Achievement {
@@ -33,7 +33,7 @@ export class Achievement {
     @Column()
     gameId: string;
 
-    @ManyToOne(() => Game, (game) => game.achievements)
+    @ManyToOne(() => (require("./games.entity") as typeof import("./games.entity")).Game, (game) => game.achievements)
     @JoinColumn({ name: "gameId" })
     game: Game;
 }
