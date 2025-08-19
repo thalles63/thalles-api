@@ -7,12 +7,14 @@ import { Theme } from "../entities/theme.entity";
 import { ListFilters } from "../interfaces/list-filters.interface";
 import { NotFoundError, ValidationError } from "../utils/errors/errors";
 import { GameSort } from "../utils/sorts/game.sort";
+import { CloudinaryService } from "./external/cloudinary.service";
 import { IgdbService } from "./external/igdb.service";
 
 export class GameService {
     private readonly gameRepository: Repository<Game>;
     private readonly igdbService: IgdbService;
     private readonly achievementRepository: Repository<Achievement>;
+    private readonly cloudinaryService: CloudinaryService;
     private readonly genreRepository: Repository<Genre>;
     private readonly themeRepository: Repository<Theme>;
 
@@ -23,6 +25,7 @@ export class GameService {
         this.themeRepository = appDataSource.getRepository(Theme);
 
         this.igdbService = new IgdbService();
+        this.cloudinaryService = new CloudinaryService();
     }
 
     async list(pageOptions = { page: 1, limit: 10, sort: 2 }, where = <ListFilters>{}, includeDeleted: boolean = false) {
@@ -103,6 +106,10 @@ export class GameService {
 
     async getById(id: string): Promise<Game | null> {
         return await this.gameRepository.findOne({ where: { id }, relations: ["achievements", "themes", "genres"] });
+    }
+
+    async listAllWithAchievements(): Promise<Game[]> {
+        return await this.gameRepository.find({ relations: ["achievements"] });
     }
 
     async countByStatus(filter: ListFilters): Promise<any[] | null> {
@@ -307,6 +314,40 @@ export class GameService {
             }
 
             gameData.timePlayed ??= 0;
+
+            Object.assign(game, gameData);
+            return await this.gameRepository.save(game);
+        } catch (error) {
+            if (error instanceof NotFoundError) {
+                throw error;
+            }
+            throw new Error(`Failed to edit game: ${error instanceof Error ? error.message : "Unknown error"}`);
+        }
+    }
+
+    async editIgdbInfo(id: string, gameData: Partial<Game>): Promise<Game | null> {
+        try {
+            const game = await this.gameRepository.findOneBy({ id });
+
+            if (!game) {
+                throw new NotFoundError("Game not found");
+            }
+
+            if (gameData.genres?.length) {
+                const genres = await this.genreRepository.findBy({
+                    slug: In(gameData.genres || [])
+                });
+
+                gameData.genres = genres;
+            }
+
+            if (gameData.themes?.length) {
+                const themes = await this.themeRepository.findBy({
+                    slug: In(gameData.themes || [])
+                });
+
+                gameData.themes = themes;
+            }
 
             Object.assign(game, gameData);
             return await this.gameRepository.save(game);

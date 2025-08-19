@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { Game } from "../../entities/games.entity";
 import { ListFilters } from "../../interfaces/list-filters.interface";
 import { AchievementService } from "../../services/achievement.service";
+import { CloudinaryService } from "../../services/external/cloudinary.service";
 import { PlayStationService } from "../../services/external/playstation.service";
 import { GameService } from "../../services/game.service";
 import { PlatformEnum } from "../../utils/enums/platform.enum";
@@ -12,11 +13,13 @@ export class SyncPsnGameController {
     private readonly gameService: GameService;
     private readonly playstationService: PlayStationService;
     private readonly achievementsService: AchievementService;
+    private readonly cloudinaryService: CloudinaryService;
 
     constructor() {
         this.gameService = new GameService();
         this.playstationService = new PlayStationService();
         this.achievementsService = new AchievementService();
+        this.cloudinaryService = new CloudinaryService();
     }
 
     public async syncPsn(req: Request, res: Response): Promise<void> {
@@ -70,6 +73,10 @@ export class SyncPsnGameController {
             await this.gameService.edit(game.id, game);
         }
 
+        for (const game of newGames) {
+            this.updateGameImagesAsync(<Game>game);
+        }
+
         res.json(gamesToUpdateAchievements);
     }
 
@@ -90,5 +97,15 @@ export class SyncPsnGameController {
 
     private async getNpCommunicationId(game: Partial<Game>) {
         return (await this.playstationService.getNpCommunicationId(<Game>game))?.titles[0]?.trophyTitles[0]?.npCommunicationId ?? "";
+    }
+
+    private updateGameImagesAsync(game: Game) {
+        this.cloudinaryService
+            .migrateAllImages(game)
+            .then(async ({ game, achievements }) => {
+                await this.gameService.edit(game.id, game);
+                await this.achievementsService.updateAchievements(achievements, game.id);
+            })
+            .catch((err) => console.error("Erro ao migrar imagens:", err));
     }
 }

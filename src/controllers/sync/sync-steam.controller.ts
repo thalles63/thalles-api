@@ -3,6 +3,7 @@ import { Achievement } from "../../entities/achievements.entity";
 import { Game } from "../../entities/games.entity";
 import { ListFilters } from "../../interfaces/list-filters.interface";
 import { AchievementService } from "../../services/achievement.service";
+import { CloudinaryService } from "../../services/external/cloudinary.service";
 import { SteamService } from "../../services/external/steam.service";
 import { GameService } from "../../services/game.service";
 import { PlatformEnum } from "../../utils/enums/platform.enum";
@@ -13,11 +14,13 @@ export class SyncSteamGameController {
     private readonly gameService: GameService;
     private readonly steamService: SteamService;
     private readonly achievementsService: AchievementService;
+    private readonly cloudinaryService: CloudinaryService;
 
     constructor() {
         this.gameService = new GameService();
         this.steamService = new SteamService();
         this.achievementsService = new AchievementService();
+        this.cloudinaryService = new CloudinaryService();
     }
 
     async syncSteam(req: Request, res: Response): Promise<void> {
@@ -88,6 +91,10 @@ export class SyncSteamGameController {
             await this.gameService.edit(game.id, game);
         }
 
+        for (const game of newGames) {
+            this.updateGameImagesAsync(<Game>game);
+        }
+
         res.json(gamesToUpdateAchievements);
     }
 
@@ -104,5 +111,14 @@ export class SyncSteamGameController {
         return listOfGamesFromApi.filter(
             (game) => game.platformId && gamesFromSteam.find((g) => g.platformId === game.platformId)?.timePlayed !== game.timePlayed
         );
+    }
+
+    private updateGameImagesAsync(game: Game) {
+        this.cloudinaryService
+            .migrateAchievementImages(game)
+            .then(async ({ achievements }) => {
+                await this.achievementsService.updateAchievements(achievements, game.id);
+            })
+            .catch((err) => console.error("Erro ao migrar imagens:", err));
     }
 }

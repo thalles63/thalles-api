@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { Game } from "../../entities/games.entity";
 import { ListFilters } from "../../interfaces/list-filters.interface";
 import { AchievementService } from "../../services/achievement.service";
+import { CloudinaryService } from "../../services/external/cloudinary.service";
 import { RetroAchievementsService } from "../../services/external/retro-achievements.service";
 import { GameService } from "../../services/game.service";
 import { PlatformEnum } from "../../utils/enums/platform.enum";
@@ -12,11 +13,13 @@ export class SyncRetroAchievementsController {
     private readonly gameService: GameService;
     private readonly retroAchievementsService: RetroAchievementsService;
     private readonly achievementsService: AchievementService;
+    private readonly cloudinaryService: CloudinaryService;
 
     constructor() {
         this.gameService = new GameService();
         this.retroAchievementsService = new RetroAchievementsService();
         this.achievementsService = new AchievementService();
+        this.cloudinaryService = new CloudinaryService();
     }
 
     public async syncRetroAchievements(req: Request, res: Response): Promise<void> {
@@ -74,6 +77,10 @@ export class SyncRetroAchievementsController {
             await this.gameService.edit(game.id, game);
         }
 
+        for (const game of newGames) {
+            this.updateGameImagesAsync(<Game>game);
+        }
+
         res.json(gamesToUpdateAchievements);
     }
 
@@ -93,5 +100,14 @@ export class SyncRetroAchievementsController {
                     new Date(game.lastTimePlayed!).getTime()
             );
         });
+    }
+
+    private updateGameImagesAsync(game: Game) {
+        this.cloudinaryService
+            .migrateAchievementImages(game)
+            .then(async ({ achievements }) => {
+                await this.achievementsService.updateAchievements(achievements, game.id);
+            })
+            .catch((err) => console.error("Erro ao migrar imagens:", err));
     }
 }

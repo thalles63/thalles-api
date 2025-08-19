@@ -29,6 +29,11 @@ export const config = {
         username: process.env.RA_USERNAME,
         apiKey: process.env.RA_API_KEY
     },
+    cloudinary: {
+        cloudName: process.env.CLOUDINARY_CLOUD_NAME!,
+        apiKey: process.env.CLOUDINARY_API_KEY!,
+        apiSecret: process.env.CLOUDINARY_API_SECRET!
+    },
     logging: {
         level: process.env.LOG_LEVEL ?? "info"
     }
