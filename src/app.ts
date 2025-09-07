@@ -1,6 +1,8 @@
 import cors from "cors";
 import express, { NextFunction, Request, Response } from "express";
+import http from "http";
 import "reflect-metadata";
+import { WebSocketServer } from "ws";
 import { config } from "./config/app.config";
 import { appDataSource } from "./config/database.config";
 import apiRoutes from "./routes/api.routes";
@@ -8,6 +10,8 @@ import { AppError } from "./utils/errors/errors";
 import logger from "./utils/logger/logger";
 
 const app = express();
+const server = http.createServer(app);
+
 process.env.TZ = "UTC";
 
 appDataSource
@@ -28,6 +32,26 @@ app.use((req: Request, res: Response, next: NextFunction) => {
         logger.info(`${req.method} ${req.url}`);
     }
     next();
+});
+
+const wss = new WebSocketServer({ noServer: true });
+app.set("wss", wss);
+
+server.on("upgrade", (request, socket, head) => {
+    if (request.url === "/ws/xbox") {
+        wss.handleUpgrade(request, socket, head, (ws: any) => {
+            ws.id = `${Date.now()}`;
+            wss.emit("connection", ws, request);
+        });
+    } else {
+        socket.destroy();
+    }
+});
+
+wss.on("connection", (ws: any) => {
+    console.log("Cliente WS conectado:", ws.id);
+
+    ws.on("close", () => console.log("Cliente WS desconectou:", ws.id));
 });
 
 app.get("/ping", (req: Request, res: Response) => {
@@ -56,4 +80,4 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction): void => {
     });
 });
 
-export default app;
+export default server;

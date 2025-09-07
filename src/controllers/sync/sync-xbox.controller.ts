@@ -22,8 +22,10 @@ export class SyncXboxGameController {
     }
 
     async syncXbox(req: Request, res: Response): Promise<void> {
+        const wss = req.app.get("wss");
+        const wsClient = [...wss.clients][0];
         const gamesSavedInApiIds = await this.getIdsOfGamesSavedInApi();
-        const gamesFromXboxLiveApi = await this.xboxService.getUserGames();
+        const gamesFromXboxLiveApi = await this.xboxService.getUserGames(wsClient);
         const newGames = gamesFromXboxLiveApi.filter((item) => !gamesSavedInApiIds.includes(item.platformId?.toString() ?? ""));
 
         for (const game of newGames) {
@@ -31,13 +33,13 @@ export class SyncXboxGameController {
             gameToSave.lastTimePlayed = undefined;
             const savedGame = await this.gameService.saveFromWeb(gameToSave, true);
 
-            await this.achievementsService.saveFromXbox(savedGame!);
+            await this.achievementsService.saveFromXbox(savedGame!, wsClient);
         }
 
         const gamesToUpdateAchievements = await this.getListOfGameIdsToUpdateAchievements(gamesFromXboxLiveApi);
 
         for (const game of gamesToUpdateAchievements) {
-            const achievements = (await this.xboxService.getListOfAchievements(game))
+            const achievements = (await this.xboxService.getListOfAchievements(game, wsClient))
                 .filter((a) => a.progressState === "Achieved")
                 .map((a: XboxAchievement) => {
                     return <Partial<Achievement>>{

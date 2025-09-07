@@ -11,8 +11,7 @@ export const config = {
         accountId: process.env.ACCOUNT_ID
     },
     xbox: {
-        username: process.env.XBOX_USERNAME,
-        password: process.env.XBOX_PASSWORD
+        clientId: process.env.XBOX_CLIENT_ID
     },
     steam: {
         apiKey: process.env.STEAM_API_KEY,

@@ -48,9 +48,9 @@ export class AchievementService {
         }
     }
 
-    async saveFromXbox(game: Partial<Game>) {
+    async saveFromXbox(game: Partial<Game>, ws: any) {
         try {
-            const achievements = await this.xboxService.getListOfAchievements(<Game>game);
+            const achievements = await this.xboxService.getListOfAchievements(<Game>game, ws);
 
             const achievementsList: Achievement[] = [];
             for (const achievement of achievements) {

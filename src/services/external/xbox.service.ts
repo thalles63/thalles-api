@@ -1,4 +1,4 @@
-import { authenticate } from "@xboxreplay/xboxlive-auth";
+import * as msal from "@azure/msal-node";
 import axios from "axios";
 import { config } from "../../config/app.config";
 import { Game } from "../../entities/games.entity";
@@ -13,12 +13,13 @@ export class XboxService {
         accessToken: "",
         expiresIn: "",
         xuid: "",
+        msalExpiresIn: new Date(),
         userHash: ""
     };
 
-    async getUserGames(): Promise<Partial<Game>[]> {
+    async getUserGames(ws: any): Promise<Partial<Game>[]> {
         try {
-            const token = await this.getXboxAccessToken();
+            const token = await this.getXboxAccessToken(ws);
             let games = <XboxTitle[]>[];
             let continuationToken: string | null = "";
 
@@ -67,9 +68,9 @@ export class XboxService {
         }
     }
 
-    async getListOfAchievements(game: Game): Promise<XboxAchievement[]> {
+    async getListOfAchievements(game: Game, ws: any): Promise<XboxAchievement[]> {
         try {
-            const token = await this.getXboxAccessToken();
+            const token = await this.getXboxAccessToken(ws);
             let achievements = <XboxAchievement[]>[];
             let continuationToken: string | null = "";
 
@@ -107,22 +108,82 @@ export class XboxService {
         }
     }
 
-    private async getXboxAccessToken() {
-        if (this.token.xuid) {
-            const isAccessTokenExpired = new Date(this.token.expiresIn).getTime() < new Date().getTime();
+    private async getMicrosoftToken(ws: any) {
+        try {
+            const pca = new msal.PublicClientApplication({
+                auth: { clientId: config.xbox.clientId!, authority: "https://login.microsoftonline.com/consumers" }
+            });
 
-            if (!isAccessTokenExpired) {
-                return this.token;
-            }
+            const result = await pca.acquireTokenByDeviceCode({
+                scopes: ["XboxLive.signin", "XboxLive.offline_access"],
+                deviceCodeCallback: (info) => {
+                    console.log(info.message);
+                    ws.send(
+                        JSON.stringify({
+                            type: "code",
+                            userCode: info.userCode,
+                            verificationUri: info.verificationUri,
+                            message: info.message
+                        })
+                    );
+                }
+            });
+
+            return result;
+        } catch (error) {
+            console.error("Error getting Msal token:", error);
+            throw new Error("Error getting Msal token");
         }
+    }
+
+    private async getXboxAccessToken(ws: any) {
+        // if (this.token.xuid) {
+        //     const isAccessTokenExpired = new Date(this.token.expiresIn).getTime() < new Date().getTime();
+        //     const isMsalTokenExpired = this.token.msalExpiresIn.getTime() < new Date().getTime();
+
+        //     if (!isAccessTokenExpired && !isMsalTokenExpired) {
+        //         return this.token;
+        //     }
+        // }
+
+        const msToken = await this.getMicrosoftToken(ws);
+        this.token.msalExpiresIn = msToken?.expiresOn!;
 
         try {
-            const response: any = await authenticate(config.xbox.username!, config.xbox.password!);
+            const userRes: any = await fetch("https://user.auth.xboxlive.com/user/authenticate", {
+                method: "POST",
+                headers: { "Content-Type": "application/json", Accept: "application/json" },
+                body: JSON.stringify({
+                    Properties: {
+                        AuthMethod: "RPS",
+                        SiteName: "user.auth.xboxlive.com",
+                        RpsTicket: `d=${msToken?.accessToken}`
+                    },
+                    RelyingParty: "http://auth.xboxlive.com",
+                    TokenType: "JWT"
+                })
+            });
 
-            this.token.accessToken = response.xsts_token;
-            this.token.expiresIn = response.expires_on;
-            this.token.xuid = response.xuid;
-            this.token.userHash = response.user_hash;
+            if (!userRes.ok) throw new Error(`user.auth failed: ${userRes.status}`);
+            const userJson = await userRes.json();
+
+            const xstsResponse: any = await fetch("https://xsts.auth.xboxlive.com/xsts/authorize", {
+                method: "POST",
+                headers: { "Content-Type": "application/json", Accept: "application/json" },
+                body: JSON.stringify({
+                    Properties: {
+                        SandboxId: "RETAIL",
+                        UserTokens: [userJson.Token]
+                    },
+                    RelyingParty: "http://xboxlive.com",
+                    TokenType: "JWT"
+                })
+            }).then((r) => r.json());
+
+            this.token.accessToken = xstsResponse.Token;
+            this.token.expiresIn = xstsResponse.NotAfter;
+            this.token.xuid = xstsResponse.DisplayClaims.xui[0].xid;
+            this.token.userHash = xstsResponse.DisplayClaims.xui[0].uhs;
 
             return this.token;
         } catch (error) {
