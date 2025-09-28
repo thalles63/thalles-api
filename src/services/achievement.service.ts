@@ -166,9 +166,10 @@ export class AchievementService {
                 const achievementToUpdate = <Achievement>{
                     id: achievement.id,
                     gameId: gameId,
-                    isAchieved: true,
+                    isAchieved: !!achievementUpdated.dateAchieved,
                     percentageAchieved: percentage,
-                    dateAchieved: achievementUpdated.dateAchieved
+                    dateAchieved: achievementUpdated.dateAchieved,
+                    image: achievementUpdated.image
                 };
 
                 achievementsList.push(achievementToUpdate);
