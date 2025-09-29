@@ -28,8 +28,8 @@ export class UpdateIgdbInfoController {
     private updateGameImagesAsync(game: Game) {
         this.cloudinaryService
             .migrateGameImages(game)
-            .then(async ({ game }) => {
-                await this.gameService.editIgdbInfo(game.id, game);
+            .then(({ game }) => {
+                this.gameService.updateImages(game.id, game);
             })
             .catch((err) => console.error("Erro ao migrar imagens:", err));
     }

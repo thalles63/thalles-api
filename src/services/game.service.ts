@@ -325,6 +325,24 @@ export class GameService {
         }
     }
 
+    async updateImages(id: string, gameData: Partial<Game>): Promise<Game | null> {
+        try {
+            const game = await this.gameRepository.findOneBy({ id });
+
+            if (!game) {
+                throw new NotFoundError("Game not found");
+            }
+
+            Object.assign(game, gameData);
+            return await this.gameRepository.save(game);
+        } catch (error) {
+            if (error instanceof NotFoundError) {
+                throw error;
+            }
+            throw new Error(`Failed to edit game: ${error instanceof Error ? error.message : "Unknown error"}`);
+        }
+    }
+
     async editIgdbInfo(id: string, gameData: Partial<Game>): Promise<Game | null> {
         try {
             const game = await this.gameRepository.findOneBy({ id });

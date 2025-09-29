@@ -25,8 +25,8 @@ export class SaveFromSteamController {
     private updateGameImagesAsync(gameId: string, achievementsToSave: Achievement[]) {
         this.cloudinaryService
             .migrateAchievementImages(<Game>{ id: gameId, achievements: achievementsToSave })
-            .then(async ({ achievements }) => {
-                await this.achievementService.updateAchievements(achievements, gameId);
+            .then(({ achievements }) => {
+                this.achievementService.updateAchievements(achievements, gameId);
             })
             .catch((err) => console.error("Erro ao migrar imagens:", err));
     }
