@@ -1,12 +1,12 @@
-import server from "./src/app";
-import { config } from "./src/config/app.config";
-import logger from "./src/utils/logger/logger";
+import { NestFactory } from "@nestjs/core";
+import { AppModule } from "./src/app.module";
+import { config } from "./src/infrastructure/config/app.config";
 
-const PORT = config.server.port;
+async function bootstrap() {
+    const app = await NestFactory.create(AppModule);
+    app.enableCors();
+    await app.listen(config.server.port);
+    console.log("API rodando na porta" + config.server.port);
+}
 
-server.listen(PORT, () => {
-    if (config.server.env === "PRD") {
-        logger.info(`Server running at http://localhost:${PORT}`);
-        logger.info(`Environment: ${config.server.env}`);
-    }
-});
+bootstrap();

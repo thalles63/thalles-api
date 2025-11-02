@@ -8,10 +8,10 @@
         "production": "bun run migration:run && bun run /index.ts",
         "typeorm": "typeorm-ts-node-commonjs",
         "migration:create": "npm run typeorm migration:create",
-        "migration:generate": "npm run typeorm -- migration:generate -d src/config/migration.config.ts",
-        "migration:run": "npm run typeorm -- migration:run -d src/config/migration.config.ts",
-        "migration:revert": "npm run typeorm -- migration:revert -d src/config/migration.config.ts",
-        "migration:show": "npm run typeorm -- migration:show -d src/config/migration.config.ts"
+        "migration:generate": "npm run typeorm -- migration:generate -d src/infrastructure/config/migration.config.ts",
+        "migration:run": "npm run typeorm -- migration:run -d src/infrastructure/config/migration.config.ts",
+        "migration:revert": "npm run typeorm -- migration:revert -d src/infrastructure/config/migration.config.ts",
+        "migration:show": "npm run typeorm -- migration:show -d src/infrastructure/config/migration.config.ts"
     },
     "author": "",
     "license": "ISC",
@@ -19,6 +19,10 @@
     "dependencies": {
         "@azure/msal-node": "^3.7.3",
         "@logtail/node": "^0.5.4",
+        "@nestjs/common": "^11.1.8",
+        "@nestjs/core": "^11.1.8",
+        "@nestjs/platform-express": "^11.1.8",
+        "@nestjs/typeorm": "^11.0.0",
         "@retroachievements/api": "^2.6.0",
         "@twurple/api": "^7.3.0",
         "@types/axios": "^0.9.36",
@@ -35,6 +39,7 @@
         "pg": "^8.15.6",
         "psn-api": "^2.11.2",
         "reflect-metadata": "^0.2.2",
+        "rxjs": "^7.8.2",
         "slugify": "^1.6.6",
         "typeorm": "^0.3.23",
         "ws": "^8.18.3"
