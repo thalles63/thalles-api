@@ -40,10 +40,11 @@ export class GamesController {
             [StatusEnum.Playing]: "playing",
             [StatusEnum.Completed]: "completed",
             [StatusEnum.Shelved]: "shelved",
-            [StatusEnum.Backlog]: "backlog"
+            [StatusEnum.Backlog]: "backlog",
+            [StatusEnum.Wishlist]: "wishlist"
         };
 
-        const counts = { playing: 0, completed: 0, shelved: 0, backlog: 0, all: 0 };
+        const counts = { playing: 0, completed: 0, shelved: 0, backlog: 0, all: 0, wishlist: 0 };
 
         gamesTotal.forEach((row) => {
             const prop = statusMap[row.status];
