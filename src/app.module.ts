@@ -3,6 +3,7 @@ import { TypeOrmModule } from "@nestjs/typeorm";
 import { config } from "./infrastructure/config/app.config";
 import { AuthModule } from "./modules/auth/auth.module";
 import { GamesModule } from "./modules/games/games.module";
+import { PingModule } from "./modules/ping/ping.module";
 
 @Module({
     imports: [
@@ -13,6 +14,7 @@ import { GamesModule } from "./modules/games/games.module";
             synchronize: false,
             ssl: true
         }),
+        PingModule,
         AuthModule,
         GamesModule
     ]
