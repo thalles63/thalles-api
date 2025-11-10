@@ -5,5 +5,9 @@ export enum PlatformEnum {
     Xbox = 4,
     Steam = 5,
     Playstation3 = 6,
-    RetroAchievements = 7
+    Snes = 7,
+    Playstation1 = 8,
+    Playstation2 = 9,
+    Gog = 10,
+    Switch = 11
 }

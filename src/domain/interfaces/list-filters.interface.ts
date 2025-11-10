@@ -5,7 +5,6 @@ export interface ListFilters {
     isPlatinumed: boolean;
     isCampaignComplete: boolean;
     status?: number;
-    retroConsole: number;
     genre: string;
     theme: string;
     releaseYear: number;

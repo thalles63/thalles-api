@@ -39,7 +39,6 @@ export class GamesController {
         const statusMap: Record<number, keyof typeof counts> = {
             [StatusEnum.Playing]: "playing",
             [StatusEnum.Completed]: "completed",
-            [StatusEnum.Shelved]: "shelved",
             [StatusEnum.Backlog]: "backlog",
             [StatusEnum.Wishlist]: "wishlist"
         };

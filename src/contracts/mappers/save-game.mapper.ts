@@ -3,6 +3,7 @@ import { GameSaveRequest } from "../../domain/dtos/game-save-request.dto";
 import { Game } from "../../domain/entities/games.entity";
 import { Genre } from "../../domain/entities/genre.entity";
 import { Theme } from "../../domain/entities/theme.entity";
+import { StatusEnum } from "../../domain/enums/status.enum";
 
 export const SaveGameMapper = async (
     game: Game,
@@ -28,7 +29,10 @@ export const SaveGameMapper = async (
         isCampaignComplete: requestGame.isCampaignComplete,
         dateCompleted: requestGame.dateCompleted,
         rating: requestGame.rating,
-        lastTimePlayed: mostRecentAchievementDate || requestGame.lastTimePlayed
+        lastTimePlayed:
+            requestGame.status === StatusEnum.Completed || requestGame.status === StatusEnum.Playing
+                ? mostRecentAchievementDate || requestGame.lastTimePlayed
+                : null
     };
     return <Game>{ ...game, ...requestGameTransformed };
 };
