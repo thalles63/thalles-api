@@ -56,7 +56,8 @@ export class IgdbService {
                     developer: game.involved_companies?.find((company: any) => company.developer)?.company.name,
                     publisher: game.involved_companies?.find((company: any) => company.publisher)?.company.name,
                     image: game.cover?.url ? `https:${game.cover.url.replace("t_thumb", "t_cover_big_2x")}` : "",
-                    screenshot: game.screenshots?.length ? `https:${game.screenshots[0].url.replace("t_thumb", "t_1080p_2x")}` : "",
+                    screenshots: game.screenshots?.length ? game.screenshots.map((s: any) => "https:" + s.url.replace("t_thumb", "t_1080p_2x")) : "",
+                    banner: game.screenshots?.length ? `https:${game.screenshots[0].url.replace("t_thumb", "t_1080p_2x")}` : "",
                     description: game.summary
                 };
             });

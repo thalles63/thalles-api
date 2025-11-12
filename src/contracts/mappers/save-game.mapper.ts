@@ -21,7 +21,7 @@ export const SaveGameMapper = async (
         platform: requestGame.platform,
         publisher: requestGame.publisher,
         releaseDate: requestGame.releaseDate,
-        screenshot: requestGame.screenshot,
+        screenshots: requestGame.screenshots.join(","),
         themes: await getThemes(requestGame.themes, themeRepository),
         status: requestGame.status,
         timePlayed: requestGame.timePlayed ?? 0,

@@ -18,7 +18,10 @@ export class Game {
     image: string;
 
     @Column({ nullable: true })
-    screenshot: string;
+    screenshots: string;
+
+    @Column({ nullable: true })
+    banner: string;
 
     @Column({ nullable: true })
     platform: number;
