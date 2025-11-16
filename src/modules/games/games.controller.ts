@@ -5,6 +5,7 @@ import { StatusEnum } from "../../domain/enums/status.enum";
 import type { GameListFilters } from "../../domain/interfaces/game-list-filters.interface";
 import { AuthGuard } from "../../infrastructure/guards/auth.guard";
 import { IgdbService } from "./external-services/igdb.service";
+import { PsnProfilesService } from "./external-services/psn-profiles.service";
 import { SteamService } from "./external-services/steam.service";
 import { GamesService } from "./games.service";
 
@@ -13,7 +14,8 @@ export class GamesController {
     constructor(
         private readonly gamesService: GamesService,
         private readonly igdbService: IgdbService,
-        private readonly steamService: SteamService
+        private readonly steamService: SteamService,
+        private readonly psnProfilesService: PsnProfilesService
     ) {}
 
     @Post("list")
@@ -72,6 +74,17 @@ export class GamesController {
     @UseGuards(AuthGuard)
     public async searchSteam(@Query("gameName") gameName: string) {
         const games = await this.steamService.searchGameByName(gameName);
+
+        if (!games?.length) {
+            throw new NotFoundException(`No games found with this name`);
+        }
+
+        return games;
+    }
+
+    @Get("searchPsnProfiles")
+    public async searchPsnProfiles(@Query("gameName") gameName: string) {
+        const games = await this.psnProfilesService.searchGame(gameName);
 
         if (!games?.length) {
             throw new NotFoundException(`No games found with this name`);

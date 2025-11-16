@@ -2,6 +2,7 @@ import { Injectable } from "@nestjs/common";
 import axios from "axios";
 import * as cheerio from "cheerio";
 import type { AchievementSaveRequest } from "../../../domain/dtos/achievement-save-request.dto";
+import { GamePsnProfiles } from "../../../domain/interfaces/game-psn-profiles.interface";
 import { config } from "../../../infrastructure/config/app.config";
 
 @Injectable()
@@ -57,6 +58,68 @@ export class PsnProfilesService {
             });
 
             return achievements;
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    public async searchGame(gameName: string) {
+        try {
+            const url = "https://psnprofiles.com/search/games?q=" + gameName;
+            const htmlFromUrl: any = (await axios.get(`http://api.scraperapi.com?api_key=${config.scrapper.key}&url=${encodeURIComponent(url)}`)).data;
+
+            const $ = cheerio.load(htmlFromUrl);
+
+            const results: GamePsnProfiles[] = [];
+
+            $("table.box.zebra tr").each((_, tr) => {
+                const row = $(tr);
+                const tdImage = row.find("td:first-child");
+                const tdInfo = row.find("td").eq(1);
+
+                const image = tdImage.find("img.game").attr("src") ?? "";
+
+                const titleLink = tdInfo.find("a.title");
+                const name = titleLink.text().trim();
+                const url = "https://psnprofiles.com" + titleLink.attr("href");
+
+                const platforms = tdInfo
+                    .find(".platforms .tag.platform")
+                    .map((_, el) => $(el).text().trim())
+                    .get();
+
+                const clone = tdInfo.clone();
+                clone.find("a.title, .platforms, br, bullet").remove();
+                const regionRaw = clone.text().replace(/\s+/g, " ").trim();
+
+                let region: string | null = null;
+
+                if (regionRaw) {
+                    const cleaned = regionRaw.replace(/•/g, "").trim();
+                    const m = cleaned.match(/([A-Za-z]{2,})$/);
+                    if (m) region = m[1];
+                    else if (cleaned.length) region = cleaned;
+                }
+
+                if (!region) {
+                    const platformTitle = tdInfo.find(".platforms .tag.platform").attr("title");
+                    if (platformTitle) {
+                        region = platformTitle.trim();
+                    }
+                }
+
+                if (name) {
+                    results.push({
+                        name,
+                        image,
+                        platforms,
+                        region,
+                        url
+                    });
+                }
+            });
+
+            return results;
         } catch (error) {
             console.log(error);
         }
