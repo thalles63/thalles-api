@@ -45,15 +45,16 @@ export class GamesController {
             [StatusEnum.Wishlist]: "wishlist"
         };
 
-        const counts = { playing: 0, completed: 0, shelved: 0, backlog: 0, all: 0, wishlist: 0 };
+        const counts = { playing: 0, completed: 0, backlog: 0, all: 0, wishlist: 0 };
 
         gamesTotal.forEach((row) => {
             const prop = statusMap[row.status];
             const total = Number(row.total);
 
             if (prop) counts[prop] = total;
-            counts.all += total;
         });
+
+        counts.all = counts.playing + counts.completed;
 
         return counts;
     }
@@ -91,6 +92,20 @@ export class GamesController {
         }
 
         return games;
+    }
+
+    @Get("genres")
+    public async genres() {
+        const genres = await this.gamesService.getGenres();
+
+        return genres;
+    }
+
+    @Get("themes")
+    public async themes() {
+        const themes = await this.gamesService.getThemes();
+
+        return themes;
     }
 
     @Get(":id")

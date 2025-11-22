@@ -107,6 +107,18 @@ export class GamesService {
         }
     }
 
+    public async getGenres() {
+        const genres = await this.genreRepository.find();
+
+        return genres;
+    }
+
+    public async getThemes() {
+        const themes = await this.themeRepository.find();
+
+        return themes;
+    }
+
     private applyFiltersToQuery(query: SelectQueryBuilder<Game>, filters: GameListFilters) {
         if (filters.status) {
             query.andWhere("games.status IN (:...statuses)", { statuses: Number(filters.status) === 5 ? [1, 2] : [Number(filters.status)] });
@@ -147,6 +159,14 @@ export class GamesService {
             query
                 .andWhere("EXTRACT(YEAR FROM games.lastTimePlayed) = :year", { year: filters.completionYear })
                 .andWhere("games.isCampaignComplete = :isCampaignComplete", { isCampaignComplete: true });
+        }
+
+        if (filters.genre) {
+            query.leftJoin("games.genres", "genre").andWhere("genre.slug = :slug", { slug: filters.genre });
+        }
+
+        if (filters.theme) {
+            query.leftJoin("games.themes", "theme").andWhere("theme.slug = :slug", { slug: filters.theme });
         }
     }
 

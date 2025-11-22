@@ -10,4 +10,6 @@ export interface GameListFilters {
     rating: number;
     releaseYear: number;
     completionYear: number;
+    genre: string;
+    theme: string;
 }
