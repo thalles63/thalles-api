@@ -21,4 +21,7 @@ export interface GameSaveRequest {
     themes: string[];
     developer: string;
     publisher: string;
+    completionistTime: number;
+    mainExtrasTime: number;
+    mainStoryTime: number;
 }

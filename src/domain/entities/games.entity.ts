@@ -56,6 +56,15 @@ export class Game {
     @Column({ nullable: true })
     lastTimePlayed?: Date;
 
+    @Column({ nullable: true })
+    completionistTime?: number;
+
+    @Column({ nullable: true })
+    mainExtrasTime?: number;
+
+    @Column({ nullable: true })
+    mainStoryTime?: number;
+
     @OneToMany(() => (require("./achievements.entity") as typeof import("./achievements.entity")).Achievement, (achievement) => achievement.game)
     achievements: Achievement[];
 

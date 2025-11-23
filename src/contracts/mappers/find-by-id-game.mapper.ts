@@ -27,6 +27,9 @@ export const FindByIdGameMapper = (game: Game) => {
         isPlatinumed: game.isPlatinumed,
         lastTimePlayed: game.lastTimePlayed,
         rating: game.rating,
-        status: game.status
+        status: game.status,
+        completionistTime: game.completionistTime,
+        mainExtrasTime: game.mainExtrasTime,
+        mainStoryTime: game.mainStoryTime
     };
 };

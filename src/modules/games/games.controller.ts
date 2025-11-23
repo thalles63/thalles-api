@@ -4,6 +4,7 @@ import type { GameSaveRequest } from "../../domain/dtos/game-save-request.dto";
 import { StatusEnum } from "../../domain/enums/status.enum";
 import type { GameListFilters } from "../../domain/interfaces/game-list-filters.interface";
 import { AuthGuard } from "../../infrastructure/guards/auth.guard";
+import { HltbService } from "./external-services/hltb.service";
 import { IgdbService } from "./external-services/igdb.service";
 import { PsnProfilesService } from "./external-services/psn-profiles.service";
 import { SteamService } from "./external-services/steam.service";
@@ -14,6 +15,7 @@ export class GamesController {
     constructor(
         private readonly gamesService: GamesService,
         private readonly igdbService: IgdbService,
+        private readonly hltbService: HltbService,
         private readonly steamService: SteamService,
         private readonly psnProfilesService: PsnProfilesService
     ) {}
@@ -69,6 +71,32 @@ export class GamesController {
         }
 
         return games;
+    }
+
+    @Get("searchHltb")
+    @UseGuards(AuthGuard)
+    public async searchHltb(@Query("gameName") gameName: string) {
+        const games = await this.hltbService.searchByName(gameName.split(" "));
+
+        if (!games.data?.length) {
+            throw new NotFoundException(`No games found with this name`);
+        }
+
+        return games.data.map((item: any) => {
+            return {
+                id: item.game_id,
+                name: item.game_name,
+                image: "https://howlongtobeat.com/games/" + item.game_image
+            };
+        });
+    }
+
+    @Get("getInfoFromHltb")
+    @UseGuards(AuthGuard)
+    public async getInfoFromHltb(@Query("id") gameId: string) {
+        const game = await this.hltbService.getInfoFromHltb(gameId);
+
+        return game;
     }
 
     @Get("searchSteam")

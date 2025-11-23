@@ -36,7 +36,7 @@ export class IgdbService {
                 "https://api.igdb.com/v4/games",
                 `search "${gameName}";
                 where game_type = (0, 3, 4, 8, 9, 10, 11, 13);
-                fields name,cover.url,screenshots.url, summary, first_release_date, franchise.slug, franchise.name, genres.name, genres.slug, themes.name, themes.slug, involved_companies.developer, involved_companies.company.name, involved_companies.publisher;
+                fields name,cover.url,screenshots.url, summary, first_release_date, franchise.slug, franchise.name, genres.name, genres.slug, themes.name, themes.slug, involved_companies.developer, involved_companies.company.name, involved_companies.publisher, checksum;
                 limit 20;`,
                 {
                     headers: {
@@ -58,7 +58,8 @@ export class IgdbService {
                     image: game.cover?.url ? `https:${game.cover.url.replace("t_thumb", "t_cover_big_2x")}` : "",
                     screenshots: game.screenshots?.length ? game.screenshots.map((s: any) => "https:" + s.url.replace("t_thumb", "t_1080p_2x")) : "",
                     banner: game.screenshots?.length ? `https:${game.screenshots[0].url.replace("t_thumb", "t_1080p_2x")}` : "",
-                    description: game.summary
+                    description: game.summary,
+                    id: game.checksum
                 };
             });
         } catch (error) {
