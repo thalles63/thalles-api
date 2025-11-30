@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Param, Post, Put, UseGuards } from "@nestjs/common";
-import type { AchievementSaveRequest } from "../../../domain/dtos/achievement-save-request.dto";
+import type { AchievementSaveRequestDto } from "../../../domain/dtos/achievement-save-request.dto";
 import { AuthGuard } from "../../../infrastructure/guards/auth.guard";
 import { AchievementsService } from "./achievements.service";
 
@@ -9,7 +9,7 @@ export class AchievementsController {
 
     @Put(":id")
     @UseGuards(AuthGuard)
-    async edit(@Param("id") id: string, @Param("gameId") gameId: string, @Body() achievement: AchievementSaveRequest) {
+    async edit(@Param("id") id: string, @Param("gameId") gameId: string, @Body() achievement: AchievementSaveRequestDto) {
         const updatedAchievement = await this.achievementsService.edit(id, achievement, gameId);
 
         return updatedAchievement;
@@ -35,6 +35,14 @@ export class AchievementsController {
     @UseGuards(AuthGuard)
     async saveFromPsnProfiles(@Body() saveFromPsnProfilesParams: { gameUrl: string }, @Param("gameId") gameId: string) {
         const achievementsSaved = await this.achievementsService.saveFromPsnProfiles(gameId, saveFromPsnProfilesParams.gameUrl);
+
+        return achievementsSaved;
+    }
+
+    @Post("saveFromRetroAchievements")
+    @UseGuards(AuthGuard)
+    async saveFromRetroAchievements(@Body() saveFromRetroAchievementsParams: { platformId: number }, @Param("gameId") gameId: string) {
+        const achievementsSaved = await this.achievementsService.saveFromRetroAchievements(gameId, saveFromRetroAchievementsParams.platformId);
 
         return achievementsSaved;
     }

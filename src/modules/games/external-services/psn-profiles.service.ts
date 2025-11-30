@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import axios from "axios";
 import * as cheerio from "cheerio";
-import type { AchievementSaveRequest } from "../../../domain/dtos/achievement-save-request.dto";
+import type { AchievementSaveRequestDto } from "../../../domain/dtos/achievement-save-request.dto";
 import { GamePsnProfiles } from "../../../domain/interfaces/game-psn-profiles.interface";
 import { config } from "../../../infrastructure/config/app.config";
 
@@ -13,13 +13,13 @@ export class PsnProfilesService {
 
             const $ = cheerio.load(htmlFromUrl);
 
-            let achievements: AchievementSaveRequest[] = [];
+            let achievements: AchievementSaveRequestDto[] = [];
             let tableFound = false;
 
             $("table").each((tableIndex, tableElement) => {
                 if (tableFound) return;
 
-                const achievementLines: AchievementSaveRequest[] = [];
+                const achievementLines: AchievementSaveRequestDto[] = [];
                 $(tableElement)
                     .find("tr")
                     .each((rowIndex, rowElement) => {
@@ -39,7 +39,7 @@ export class PsnProfilesService {
                             .trim();
 
                         if (!!imgSrc && !!linkText && !!afterFirstBr && !!typoTop) {
-                            achievementLines.push(<AchievementSaveRequest>{
+                            achievementLines.push(<AchievementSaveRequestDto>{
                                 image: imgSrc || "",
                                 name: linkText,
                                 dateAchieved: dateText ? this.parseDateTime(dateText, timeText) : undefined,

@@ -1,5 +1,5 @@
 import { In, Repository } from "typeorm";
-import { GameSaveRequest } from "../../domain/dtos/game-save-request.dto";
+import { GameSaveRequestDto } from "../../domain/dtos/game-save-request.dto";
 import { Game } from "../../domain/entities/games.entity";
 import { Genre } from "../../domain/entities/genre.entity";
 import { Theme } from "../../domain/entities/theme.entity";
@@ -7,7 +7,7 @@ import { StatusEnum } from "../../domain/enums/status.enum";
 
 export const SaveGameMapper = async (
     game: Game,
-    requestGame: GameSaveRequest,
+    requestGame: GameSaveRequestDto,
     genreRepository: Repository<Genre>,
     themeRepository: Repository<Theme>,
     mostRecentAchievementDate?: Date

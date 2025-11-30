@@ -1,6 +1,6 @@
 import { Body, Controller, ForbiddenException, Post } from "@nestjs/common";
 import jwt from "jsonwebtoken";
-import type { LoginCredentials } from "../../domain/interfaces/login-credentials.interface";
+import { LoginCredentialsDto } from "../../domain/dtos/login-credentials.dto";
 import { AuthService } from "./auth.service";
 
 @Controller("api/auth")
@@ -10,7 +10,7 @@ export class AuthController {
     private readonly JWT_SECRET = process.env.JWT_SECRET!;
 
     @Post("login")
-    async findByCpf(@Body() loginCredentials: LoginCredentials) {
+    async findByCpf(@Body() loginCredentials: LoginCredentialsDto) {
         const user = await this.authService.validateUser(loginCredentials);
 
         if (!user) {

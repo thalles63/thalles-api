@@ -1,7 +1,7 @@
-import { AchievementSaveRequest } from "../../domain/dtos/achievement-save-request.dto";
+import { AchievementSaveRequestDto } from "../../domain/dtos/achievement-save-request.dto";
 import { Achievement } from "../../domain/entities/achievements.entity";
 
-export const EditAchievementMapper = (achievement: Achievement, requestAchievement: AchievementSaveRequest) => {
+export const EditAchievementMapper = (achievement: Achievement, requestAchievement: AchievementSaveRequestDto) => {
     const achiev = {
         id: requestAchievement.id,
         name: requestAchievement.name,

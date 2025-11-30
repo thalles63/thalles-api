@@ -1,12 +1,12 @@
 import { Body, Controller, Delete, Get, NotFoundException, Param, Post, Put, Query, UseGuards } from "@nestjs/common";
 import { FindByIdGameMapper } from "../../contracts/mappers/find-by-id-game.mapper";
-import type { GameSaveRequest } from "../../domain/dtos/game-save-request.dto";
+import { GameListFiltersDto } from "../../domain/dtos/game-list-filters.dto";
+import type { GameSaveRequestDto } from "../../domain/dtos/game-save-request.dto";
 import { StatusEnum } from "../../domain/enums/status.enum";
-import type { GameListFilters } from "../../domain/interfaces/game-list-filters.interface";
 import { AuthGuard } from "../../infrastructure/guards/auth.guard";
-import { HltbService } from "./external-services/hltb.service";
 import { IgdbService } from "./external-services/igdb.service";
 import { PsnProfilesService } from "./external-services/psn-profiles.service";
+import { RetroAchievementsService } from "./external-services/retro-achievements.service";
 import { SteamService } from "./external-services/steam.service";
 import { GamesService } from "./games.service";
 
@@ -15,13 +15,13 @@ export class GamesController {
     constructor(
         private readonly gamesService: GamesService,
         private readonly igdbService: IgdbService,
-        private readonly hltbService: HltbService,
         private readonly steamService: SteamService,
-        private readonly psnProfilesService: PsnProfilesService
+        private readonly psnProfilesService: PsnProfilesService,
+        private readonly retroAchievementsService: RetroAchievementsService
     ) {}
 
     @Post("list")
-    public async list(@Body() listFilters: GameListFilters) {
+    public async list(@Body() listFilters: GameListFiltersDto) {
         const { games, total } = await this.gamesService.list(listFilters);
 
         return {
@@ -37,7 +37,7 @@ export class GamesController {
     }
 
     @Post("count")
-    public async countByStatus(@Body() listFilters: GameListFilters) {
+    public async countByStatus(@Body() listFilters: GameListFiltersDto) {
         const gamesTotal = await this.gamesService.countByStatus(listFilters);
 
         const statusMap: Record<number, keyof typeof counts> = {
@@ -73,32 +73,6 @@ export class GamesController {
         return games;
     }
 
-    @Get("searchHltb")
-    @UseGuards(AuthGuard)
-    public async searchHltb(@Query("gameName") gameName: string) {
-        const games = await this.hltbService.searchByName(gameName.split(" "));
-
-        if (!games.data?.length) {
-            throw new NotFoundException(`No games found with this name`);
-        }
-
-        return games.data.map((item: any) => {
-            return {
-                id: item.game_id,
-                name: item.game_name,
-                image: "https://howlongtobeat.com/games/" + item.game_image
-            };
-        });
-    }
-
-    @Get("getInfoFromHltb")
-    @UseGuards(AuthGuard)
-    public async getInfoFromHltb(@Query("id") gameId: string) {
-        const game = await this.hltbService.getInfoFromHltb(gameId);
-
-        return game;
-    }
-
     @Get("searchSteam")
     @UseGuards(AuthGuard)
     public async searchSteam(@Query("gameName") gameName: string) {
@@ -112,8 +86,21 @@ export class GamesController {
     }
 
     @Get("searchPsnProfiles")
+    @UseGuards(AuthGuard)
     public async searchPsnProfiles(@Query("gameName") gameName: string) {
         const games = await this.psnProfilesService.searchGame(gameName);
+
+        if (!games?.length) {
+            throw new NotFoundException(`No games found with this name`);
+        }
+
+        return games;
+    }
+
+    @Get("searchRetroAchievements")
+    @UseGuards(AuthGuard)
+    public async searchRetroAchievements(@Query("gameName") gameName: string, @Query("platform") platform: number) {
+        const games = await this.retroAchievementsService.searchGameByName(gameName, platform);
 
         if (!games?.length) {
             throw new NotFoundException(`No games found with this name`);
@@ -149,7 +136,7 @@ export class GamesController {
 
     @Post("")
     @UseGuards(AuthGuard)
-    public async save(@Body() gameRequest: GameSaveRequest) {
+    public async save(@Body() gameRequest: GameSaveRequestDto) {
         const gameSaved = await this.gamesService.save(gameRequest);
 
         return gameSaved;
@@ -157,7 +144,7 @@ export class GamesController {
 
     @Put(":id")
     @UseGuards(AuthGuard)
-    public async edit(@Param("id") id: string, @Body() gameRequest: GameSaveRequest) {
+    public async edit(@Param("id") id: string, @Body() gameRequest: GameSaveRequestDto) {
         const updatedGame = await this.gamesService.edit(id, gameRequest);
 
         return updatedGame;

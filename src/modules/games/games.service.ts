@@ -3,12 +3,12 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { In, Raw, Repository, SelectQueryBuilder } from "typeorm";
 import { ListGameMapper } from "../../contracts/mappers/list-game.mapper";
 import { SaveGameMapper } from "../../contracts/mappers/save-game.mapper";
-import type { GameSaveRequest } from "../../domain/dtos/game-save-request.dto";
+import { GameListFiltersDto } from "../../domain/dtos/game-list-filters.dto";
+import type { GameSaveRequestDto } from "../../domain/dtos/game-save-request.dto";
 import type { Achievement } from "../../domain/entities/achievements.entity";
 import { Game } from "../../domain/entities/games.entity";
 import { Genre } from "../../domain/entities/genre.entity";
 import { Theme } from "../../domain/entities/theme.entity";
-import type { GameListFilters } from "../../domain/interfaces/game-list-filters.interface";
 import { GameSort } from "../../domain/sorts/game.sort";
 import { AchievementsService } from "./achievements/achievements.service";
 
@@ -21,7 +21,7 @@ export class GamesService {
         private readonly achievementsService: AchievementsService
     ) {}
 
-    public async list(filters: GameListFilters) {
+    public async list(filters: GameListFiltersDto) {
         const query = this.gameRepository
             .createQueryBuilder("games")
             .skip((filters.page - 1) * filters.limit)
@@ -35,7 +35,7 @@ export class GamesService {
         return { games, total };
     }
 
-    public async countByStatus(filters: GameListFilters) {
+    public async countByStatus(filters: GameListFiltersDto) {
         const query = this.gameRepository.createQueryBuilder("games").select("games.status", "status").addSelect("COUNT(*)", "total");
 
         delete filters.status;
@@ -56,7 +56,7 @@ export class GamesService {
             .getOne();
     }
 
-    public async save(gameRequest: GameSaveRequest) {
+    public async save(gameRequest: GameSaveRequestDto) {
         try {
             if (!gameRequest.name) {
                 throw new BadRequestException("Missing required field: name");
@@ -72,7 +72,7 @@ export class GamesService {
         }
     }
 
-    public async edit(id: string, gameData: GameSaveRequest) {
+    public async edit(id: string, gameData: GameSaveRequestDto) {
         try {
             const game = await this.gameRepository.findOneBy({ id });
 
@@ -119,7 +119,7 @@ export class GamesService {
         return themes;
     }
 
-    private applyFiltersToQuery(query: SelectQueryBuilder<Game>, filters: GameListFilters) {
+    private applyFiltersToQuery(query: SelectQueryBuilder<Game>, filters: GameListFiltersDto) {
         if (filters.status) {
             query.andWhere("games.status IN (:...statuses)", { statuses: Number(filters.status) === 5 ? [1, 2] : [Number(filters.status)] });
         }
@@ -170,7 +170,7 @@ export class GamesService {
         }
     }
 
-    private applySortsToQuery(query: SelectQueryBuilder<Game>, filters: GameListFilters) {
+    private applySortsToQuery(query: SelectQueryBuilder<Game>, filters: GameListFiltersDto) {
         if (filters.sort) {
             query.addSelect("LOWER(games.name)", "games_name_lower");
 

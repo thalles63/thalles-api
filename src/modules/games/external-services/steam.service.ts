@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import axios from "axios";
-import { AchievementSaveRequest } from "../../../domain/dtos/achievement-save-request.dto";
+import { AchievementSaveRequestDto } from "../../../domain/dtos/achievement-save-request.dto";
 import type { Game } from "../../../domain/entities/games.entity";
 import { config } from "../../../infrastructure/config/app.config";
 
@@ -20,7 +20,7 @@ export class SteamService {
         });
     }
 
-    async getListOfAchievements(steamId: string): Promise<AchievementSaveRequest[]> {
+    async getListOfAchievements(steamId: string): Promise<AchievementSaveRequestDto[]> {
         try {
             const gameAchievements: any = await axios.get(
                 `https://api.steampowered.com/ISteamUserStats/GetSchemaForGame/v2/?key=${this.apiKey}&appid=${steamId}`
@@ -31,7 +31,7 @@ export class SteamService {
             }
 
             return gameAchievements.data.game.availableGameStats.achievements.map((achievement: any) => {
-                return <AchievementSaveRequest>{
+                return <AchievementSaveRequestDto>{
                     platformId: achievement.name,
                     name: achievement.displayName,
                     description: achievement.description,

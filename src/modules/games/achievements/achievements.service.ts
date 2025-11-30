@@ -3,10 +3,11 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { EditAchievementMapper } from "../../../contracts/mappers/edit-achievement.mapper";
 import { SaveAchievementMapper } from "../../../contracts/mappers/save-achievement.mapper";
-import { AchievementSaveRequest } from "../../../domain/dtos/achievement-save-request.dto";
+import { AchievementSaveRequestDto } from "../../../domain/dtos/achievement-save-request.dto";
 import { Achievement } from "../../../domain/entities/achievements.entity";
 import { Game } from "../../../domain/entities/games.entity";
 import { PsnProfilesService } from "../external-services/psn-profiles.service";
+import { RetroAchievementsService } from "../external-services/retro-achievements.service";
 import { SteamService } from "../external-services/steam.service";
 
 @Injectable()
@@ -15,10 +16,11 @@ export class AchievementsService {
         @InjectRepository(Achievement) private readonly achievementRepository: Repository<Achievement>,
         @InjectRepository(Game) private readonly gameRepository: Repository<Game>,
         private readonly steamService: SteamService,
-        private readonly psnProfilesService: PsnProfilesService
+        private readonly psnProfilesService: PsnProfilesService,
+        private readonly retroAchievementsService: RetroAchievementsService
     ) {}
 
-    public async edit(id: string, achievementData: AchievementSaveRequest, gameId: string) {
+    public async edit(id: string, achievementData: AchievementSaveRequestDto, gameId: string) {
         try {
             const dbAchievement = await this.achievementRepository.findOneBy({ id });
 
@@ -77,6 +79,23 @@ export class AchievementsService {
 
             const achievementsList = [];
             for (const achievement of psnAchievements!) {
+                const newAchievement = this.achievementRepository.create(SaveAchievementMapper(<Achievement>{}, achievement, gameId));
+
+                achievementsList.push(newAchievement);
+            }
+
+            return await this.achievementRepository.save(achievementsList);
+        } catch (error) {
+            throw new BadRequestException(`Failed to save achievements: ${error instanceof Error ? error.message : "Unknown error"}`);
+        }
+    }
+
+    async saveFromRetroAchievements(gameId: string, retroAchievementsId: number) {
+        try {
+            const retroAchievements = await this.retroAchievementsService.getAchievements(retroAchievementsId);
+
+            const achievementsList = [];
+            for (const achievement of retroAchievements!) {
                 const newAchievement = this.achievementRepository.create(SaveAchievementMapper(<Achievement>{}, achievement, gameId));
 
                 achievementsList.push(newAchievement);
