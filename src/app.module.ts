@@ -2,6 +2,7 @@ import { Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { config } from "./infrastructure/config/app.config";
 import { AuthModule } from "./modules/auth/auth.module";
+import { BacklogScheduleModule } from "./modules/backlog-schedule/backlog-schedule.module";
 import { GamesModule } from "./modules/games/games.module";
 import { PingModule } from "./modules/ping/ping.module";
 
@@ -16,7 +17,8 @@ import { PingModule } from "./modules/ping/ping.module";
         }),
         PingModule,
         AuthModule,
-        GamesModule
+        GamesModule,
+        BacklogScheduleModule
     ]
 })
 export class AppModule {}

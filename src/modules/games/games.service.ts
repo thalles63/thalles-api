@@ -6,9 +6,11 @@ import { SaveGameMapper } from "../../contracts/mappers/save-game.mapper";
 import { GameListFiltersDto } from "../../domain/dtos/game-list-filters.dto";
 import type { GameSaveRequestDto } from "../../domain/dtos/game-save-request.dto";
 import type { Achievement } from "../../domain/entities/achievements.entity";
+import { BacklogSchedule } from "../../domain/entities/backlog-schedule.entity";
 import { Game } from "../../domain/entities/games.entity";
 import { Genre } from "../../domain/entities/genre.entity";
 import { Theme } from "../../domain/entities/theme.entity";
+import { StatusEnum } from "../../domain/enums/status.enum";
 import { GameSort } from "../../domain/sorts/game.sort";
 import { AchievementsService } from "./achievements/achievements.service";
 
@@ -18,6 +20,7 @@ export class GamesService {
         @InjectRepository(Game) private readonly gameRepository: Repository<Game>,
         @InjectRepository(Theme) private readonly themeRepository: Repository<Theme>,
         @InjectRepository(Genre) private readonly genreRepository: Repository<Genre>,
+        @InjectRepository(BacklogSchedule) private readonly backlogScheduleRepository: Repository<BacklogSchedule>,
         private readonly achievementsService: AchievementsService
     ) {}
 
@@ -84,6 +87,10 @@ export class GamesService {
             const gameToSave = await SaveGameMapper(game, gameData, this.genreRepository, this.themeRepository, mostRecentAchievement.dateAchieved);
 
             await this.gameRepository.save(gameToSave);
+
+            if (gameToSave.status === StatusEnum.Completed) {
+                await this.tryToRemoveGameFromBacklogSchedule(gameToSave.id);
+            }
 
             return gameToSave;
         } catch (error) {
@@ -188,5 +195,15 @@ export class GamesService {
                 query.addOrderBy("games.lastTimePlayed", "DESC");
             }
         }
+    }
+
+    private async tryToRemoveGameFromBacklogSchedule(gameId: string) {
+        const backlog = await this.backlogScheduleRepository.findOneBy({ gameId: gameId });
+
+        if (!backlog) {
+            return;
+        }
+
+        return await this.backlogScheduleRepository.delete({ gameId: gameId });
     }
 }

@@ -1,5 +1,6 @@
 import { Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
+import { BacklogSchedule } from "../../domain/entities/backlog-schedule.entity";
 import { Game } from "../../domain/entities/games.entity";
 import { Genre } from "../../domain/entities/genre.entity";
 import { RetroAchievementsGames } from "../../domain/entities/retroAchievementsGames.entity";
@@ -13,7 +14,7 @@ import { GamesController } from "./games.controller";
 import { GamesService } from "./games.service";
 
 @Module({
-    imports: [TypeOrmModule.forFeature([Game, Genre, Theme, RetroAchievementsGames]), AchievementsModule],
+    imports: [TypeOrmModule.forFeature([Game, Genre, Theme, RetroAchievementsGames, BacklogSchedule]), AchievementsModule],
     controllers: [GamesController],
     providers: [GamesService, IgdbService, SteamService, PsnProfilesService, RetroAchievementsService]
 })
