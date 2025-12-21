@@ -11,7 +11,11 @@ export const ListGameMapper = (games: Game[], total: any) => {
             platform: game.platform,
             lastTimePlayed: game.lastTimePlayed,
             rating: game.rating,
-            status: game.status
+            status: game.status,
+            currentPrice: Number(game.currentPrice ?? 0),
+            isPriceAllTimeLow: game.isPriceAllTimeLow,
+            isPriceOneYearTimeLow: game.isPriceOneYearTimeLow,
+            urlToBuy: game.urlToBuy
         };
 
         gamesMapped.push(gameMapped);

@@ -1,4 +1,5 @@
 import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinTable, ManyToMany, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { StatusEnum } from "../enums/status.enum";
 import type { Achievement } from "./achievements.entity";
 import type { Genre } from "./genre.entity";
 import type { Theme } from "./theme.entity";
@@ -35,7 +36,7 @@ export class Game {
     @Column({ nullable: true })
     publisher: string;
 
-    @Column({ default: 1 })
+    @Column({ default: StatusEnum.Wishlist })
     status: number;
 
     @Column({ default: 0 })
@@ -64,6 +65,21 @@ export class Game {
 
     @Column({ nullable: true })
     mainStoryTime?: number;
+
+    @Column({ unique: true, nullable: true })
+    itadId: string;
+
+    @Column({ type: "decimal", precision: 10, scale: 2, nullable: true })
+    currentPrice: number;
+
+    @Column({ default: false })
+    isPriceAllTimeLow: boolean;
+
+    @Column({ default: false })
+    isPriceOneYearTimeLow: boolean;
+
+    @Column({ nullable: true })
+    urlToBuy: string;
 
     @OneToMany(() => (require("./achievements.entity") as typeof import("./achievements.entity")).Achievement, (achievement) => achievement.game)
     achievements: Achievement[];

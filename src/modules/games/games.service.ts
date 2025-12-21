@@ -194,6 +194,12 @@ export class GamesService {
                 query.orderBy("games.rating", "DESC");
                 query.addOrderBy("games.lastTimePlayed", "DESC");
             }
+
+            if (filters.sort === GameSort.Price) {
+                query.orderBy("games.isPriceAllTimeLow", "DESC");
+                query.addOrderBy("games.isPriceOneYearTimeLow", "DESC");
+                query.addOrderBy("games.currentPrice", "ASC");
+            }
         }
     }
 

@@ -101,4 +101,8 @@ export class GameSaveRequestDto {
     @IsOptional()
     @IsInt()
     mainStoryTime: number;
+
+    @IsOptional()
+    @IsInt()
+    itadId: string;
 }

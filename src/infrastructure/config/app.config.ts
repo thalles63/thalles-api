@@ -25,6 +25,9 @@ export const config = {
         username: process.env.RA_USERNAME,
         apiKey: process.env.RA_API_KEY
     },
+    itad: {
+        apiKey: process.env.ITAD_API_KEY
+    },
     logging: {
         level: process.env.LOG_LEVEL ?? "info"
     }

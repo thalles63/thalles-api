@@ -1,4 +1,5 @@
 import { Module } from "@nestjs/common";
+import { ScheduleModule } from "@nestjs/schedule";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { config } from "./infrastructure/config/app.config";
 import { AuthModule } from "./modules/auth/auth.module";
@@ -15,6 +16,7 @@ import { PingModule } from "./modules/ping/ping.module";
             synchronize: false,
             ssl: true
         }),
+        ScheduleModule.forRoot(),
         PingModule,
         AuthModule,
         GamesModule,

@@ -1,3 +1,4 @@
+import { HttpModule } from "@nestjs/axios";
 import { Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { BacklogSchedule } from "../../domain/entities/backlog-schedule.entity";
@@ -7,6 +8,7 @@ import { RetroAchievementsGames } from "../../domain/entities/retroAchievementsG
 import { Theme } from "../../domain/entities/theme.entity";
 import { AchievementsModule } from "./achievements/achievements.module";
 import { IgdbService } from "./external-services/igdb.service";
+import { ItadService } from "./external-services/itad.service";
 import { PsnProfilesService } from "./external-services/psn-profiles.service";
 import { RetroAchievementsService } from "./external-services/retro-achievements.service";
 import { SteamService } from "./external-services/steam.service";
@@ -14,8 +16,8 @@ import { GamesController } from "./games.controller";
 import { GamesService } from "./games.service";
 
 @Module({
-    imports: [TypeOrmModule.forFeature([Game, Genre, Theme, RetroAchievementsGames, BacklogSchedule]), AchievementsModule],
+    imports: [TypeOrmModule.forFeature([Game, Genre, Theme, RetroAchievementsGames, BacklogSchedule]), AchievementsModule, HttpModule],
     controllers: [GamesController],
-    providers: [GamesService, IgdbService, SteamService, PsnProfilesService, RetroAchievementsService]
+    providers: [GamesService, IgdbService, SteamService, PsnProfilesService, RetroAchievementsService, ItadService]
 })
 export class GamesModule {}

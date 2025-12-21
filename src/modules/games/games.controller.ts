@@ -5,6 +5,7 @@ import type { GameSaveRequestDto } from "../../domain/dtos/game-save-request.dto
 import { StatusEnum } from "../../domain/enums/status.enum";
 import { AuthGuard } from "../../infrastructure/guards/auth.guard";
 import { IgdbService } from "./external-services/igdb.service";
+import { ItadService } from "./external-services/itad.service";
 import { PsnProfilesService } from "./external-services/psn-profiles.service";
 import { RetroAchievementsService } from "./external-services/retro-achievements.service";
 import { SteamService } from "./external-services/steam.service";
@@ -17,7 +18,8 @@ export class GamesController {
         private readonly igdbService: IgdbService,
         private readonly steamService: SteamService,
         private readonly psnProfilesService: PsnProfilesService,
-        private readonly retroAchievementsService: RetroAchievementsService
+        private readonly retroAchievementsService: RetroAchievementsService,
+        private readonly itadService: ItadService
     ) {}
 
     @Post("list")
@@ -107,6 +109,28 @@ export class GamesController {
         }
 
         return games;
+    }
+
+    @Get("searchItad")
+    @UseGuards(AuthGuard)
+    public async searchItad(@Query("gameName") gameName: string) {
+        const games = await this.itadService.searchGameByName(gameName);
+
+        if (!games?.length) {
+            throw new NotFoundException(`No games found with this name`);
+        }
+
+        return games;
+    }
+
+    @Post("syncItad")
+    @UseGuards(AuthGuard)
+    public async syncItad() {
+        await this.itadService.handleGamesSync();
+
+        return {
+            message: "Sync executed successfully"
+        };
     }
 
     @Get("genres")

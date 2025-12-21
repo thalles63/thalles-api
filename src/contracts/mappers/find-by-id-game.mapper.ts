@@ -30,6 +30,11 @@ export const FindByIdGameMapper = (game: Game) => {
         status: game.status,
         completionistTime: game.completionistTime,
         mainExtrasTime: game.mainExtrasTime,
-        mainStoryTime: game.mainStoryTime
+        mainStoryTime: game.mainStoryTime,
+        itadId: game.itadId,
+        currentPrice: game.currentPrice,
+        isPriceAllTimeLow: game.isPriceAllTimeLow,
+        isPriceOneYearTimeLow: game.isPriceOneYearTimeLow,
+        urlToBuy: game.urlToBuy
     };
 };
