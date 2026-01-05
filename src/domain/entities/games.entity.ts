@@ -72,6 +72,12 @@ export class Game {
     @Column({ type: "decimal", precision: 10, scale: 2, nullable: true })
     currentPrice: number;
 
+    @Column({ type: "decimal", precision: 10, scale: 2, nullable: true })
+    regularPrice: number;
+
+    @Column({ nullable: true })
+    priceExpiry?: Date;
+
     @Column({ default: false })
     isPriceAllTimeLow: boolean;
 

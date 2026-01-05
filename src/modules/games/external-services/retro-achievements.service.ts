@@ -3,15 +3,18 @@ import { AuthObject, buildAuthorization, getGameExtended } from "@retroachieveme
 import { Repository } from "typeorm";
 import { AchievementSaveRequestDto } from "../../../domain/dtos/achievement-save-request.dto";
 import { RetroAchievementsGames } from "../../../domain/entities/retroAchievementsGames.entity";
+import { PlatformEnum } from "../../../domain/enums/platform.enum";
 import { config } from "../../../infrastructure/config/app.config";
+import { Playstation2Games } from "../../../infrastructure/retro-games-data/playstation2";
+import { SnesGames } from "../../../infrastructure/retro-games-data/snes";
 
 export class RetroAchievementsService {
     constructor(@InjectRepository(RetroAchievementsGames) private readonly retroAchievementsGamesRepository: Repository<RetroAchievementsGames>) {}
 
     async searchGameByName(gameName: string, platform: number) {
-        const games = await this.retroAchievementsGamesRepository.findOneBy({ platform: platform });
+        const games = this.getGamesFromPlatform(platform);
 
-        return games?.games
+        return games
             .filter((game: any) => game.Title.toString().toLowerCase().includes(gameName.toLowerCase()))
             .map((game: any) => ({
                 platformId: game.ID,
@@ -46,5 +49,16 @@ export class RetroAchievementsService {
         const webApiKey = config.retroAchievements.apiKey ?? "";
 
         return buildAuthorization({ username, webApiKey });
+    }
+
+    private getGamesFromPlatform(platform: number) {
+        switch (platform) {
+            case PlatformEnum.Snes:
+                return SnesGames;
+            case PlatformEnum.Playstation2:
+                return Playstation2Games;
+            default:
+                return [];
+        }
     }
 }

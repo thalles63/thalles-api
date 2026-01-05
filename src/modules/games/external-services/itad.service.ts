@@ -41,6 +41,8 @@ export class ItadService {
                     game.isPriceOneYearTimeLow = false;
                 }
 
+                game.regularPrice = item.deals[0].regular.amount;
+                game.priceExpiry = item.deals[0].expiry;
                 game.currentPrice = item.deals[0].price.amount;
                 game.urlToBuy = item.deals[0].url;
 

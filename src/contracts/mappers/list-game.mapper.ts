@@ -13,9 +13,14 @@ export const ListGameMapper = (games: Game[], total: any) => {
             rating: game.rating,
             status: game.status,
             currentPrice: Number(game.currentPrice ?? 0),
+            regularPrice: Number(game.regularPrice ?? 0),
+            priceExpiry: game.priceExpiry,
             isPriceAllTimeLow: game.isPriceAllTimeLow,
             isPriceOneYearTimeLow: game.isPriceOneYearTimeLow,
-            urlToBuy: game.urlToBuy
+            urlToBuy: game.urlToBuy,
+            timePlayed: game.timePlayed,
+            achievements: game.achievements.length,
+            earnedAchievements: game.achievements.filter((a) => a.isAchieved).length
         };
 
         gamesMapped.push(gameMapped);

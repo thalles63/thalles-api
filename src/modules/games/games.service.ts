@@ -27,6 +27,7 @@ export class GamesService {
     public async list(filters: GameListFiltersDto) {
         const query = this.gameRepository
             .createQueryBuilder("games")
+            .leftJoinAndSelect("games.achievements", "achievements")
             .skip((filters.page - 1) * filters.limit)
             .take(filters.limit);
 
