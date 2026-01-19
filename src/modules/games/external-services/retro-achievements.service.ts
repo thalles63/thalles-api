@@ -5,6 +5,7 @@ import { AchievementSaveRequestDto } from "../../../domain/dtos/achievement-save
 import { RetroAchievementsGames } from "../../../domain/entities/retroAchievementsGames.entity";
 import { PlatformEnum } from "../../../domain/enums/platform.enum";
 import { config } from "../../../infrastructure/config/app.config";
+import { PlaystationGames } from "../../../infrastructure/retro-games-data/playstation";
 import { Playstation2Games } from "../../../infrastructure/retro-games-data/playstation2";
 import { SnesGames } from "../../../infrastructure/retro-games-data/snes";
 
@@ -57,6 +58,8 @@ export class RetroAchievementsService {
                 return SnesGames;
             case PlatformEnum.Playstation2:
                 return Playstation2Games;
+            case PlatformEnum.Playstation1:
+                return PlaystationGames;
             default:
                 return [];
         }
