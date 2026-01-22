@@ -14,7 +14,7 @@ async function bootstrap() {
         })
     );
 
-    await app.listen(config.server.port);
+    await app.listen(config.server.port, "0.0.0.0");
     console.log("API rodando na porta" + config.server.port);
 }
 
