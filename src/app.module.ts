@@ -1,26 +1,33 @@
 import { Module } from "@nestjs/common";
-import { ScheduleModule } from "@nestjs/schedule";
 import { TypeOrmModule } from "@nestjs/typeorm";
-import { config } from "./infrastructure/config/app.config";
-import { AuthModule } from "./modules/auth/auth.module";
-import { BacklogScheduleModule } from "./modules/backlog-schedule/backlog-schedule.module";
-import { GamesModule } from "./modules/games/games.module";
-import { PingModule } from "./modules/ping/ping.module";
+import { ApplicationRoutes } from "./app.routing";
+import { GincanaModule } from "./gincana/gincana.module";
+import { GincanaConfig } from "./gincana/infrastructure/config/app.config";
+import { OrmConnectionEnum } from "./shared/enum/orm-connection.enum";
+import { TrophiesConfig } from "./trophies/infrastructure/config/app.config";
+import { TrophiesModule } from "./trophies/trophies.module";
 
 @Module({
     imports: [
         TypeOrmModule.forRoot({
+            name: OrmConnectionEnum.Trophies,
             type: "postgres",
-            url: config.database.url,
-            entities: ["src/domain/entities/**/*.ts"],
+            url: TrophiesConfig.database.url,
+            entities: ["src/trophies/domain/entities/**/*.ts"],
             synchronize: false,
             ssl: true
         }),
-        ScheduleModule.forRoot(),
-        PingModule,
-        AuthModule,
-        GamesModule,
-        BacklogScheduleModule
+        TypeOrmModule.forRoot({
+            name: OrmConnectionEnum.Gincana,
+            type: "postgres",
+            url: GincanaConfig.database.dbUrl,
+            entities: ["src/gincana/domain/entities/**/*.ts"],
+            synchronize: false,
+            ssl: true
+        }),
+        TrophiesModule,
+        GincanaModule,
+        ApplicationRoutes
     ]
 })
 export class AppModule {}

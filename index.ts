@@ -1,7 +1,7 @@
 import { ValidationPipe } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
 import { AppModule } from "./src/app.module";
-import { config } from "./src/infrastructure/config/app.config";
+import { GeneralConfig } from "./src/shared/config/general.config";
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule);
@@ -14,8 +14,8 @@ async function bootstrap() {
         })
     );
 
-    await app.listen(config.server.port, "0.0.0.0");
-    console.log("API rodando na porta" + config.server.port);
+    await app.listen(GeneralConfig.port, "0.0.0.0");
+    console.log("API rodando na porta" + GeneralConfig.port);
 }
 
 bootstrap();

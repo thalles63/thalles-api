@@ -1,5 +1,5 @@
 {
-    "name": "trophies-api",
+    "name": "thalles-api",
     "version": "1.0.0",
     "main": "index.js",
     "scripts": {
@@ -7,11 +7,14 @@
         "typecheck": "tsc --noEmit",
         "production": "bun run migration:run && bun run /index.ts",
         "typeorm": "typeorm-ts-node-commonjs",
-        "migration:create": "npm run typeorm migration:create",
-        "migration:generate": "npm run typeorm -- migration:generate -d src/infrastructure/config/migration.config.ts",
-        "migration:run": "npm run typeorm -- migration:run -d src/infrastructure/config/migration.config.ts",
-        "migration:revert": "npm run typeorm -- migration:revert -d src/infrastructure/config/migration.config.ts",
-        "migration:show": "npm run typeorm -- migration:show -d src/infrastructure/config/migration.config.ts"
+        "trophies-migration:generate": "npm run typeorm -- migration:generate -d src/trophies/infrastructure/config/migration.config.ts",
+        "trophies-migration:run": "npm run typeorm -- migration:run -d src/trophies/infrastructure/config/migration.config.ts",
+        "trophies-migration:revert": "npm run typeorm -- migration:revert -d src/trophies/infrastructure/config/migration.config.ts",
+        "trophies-migration:show": "npm run typeorm -- migration:show -d src/trophies/infrastructure/config/migration.config.ts",
+        "gincana-migration:generate": "npm run typeorm -- migration:generate -d src/gincana/infrastructure/config/migration.config.ts",
+        "gincana-migration:run": "npm run typeorm -- migration:run -d src/gincana/infrastructure/config/migration.config.ts",
+        "gincana-migration:revert": "npm run typeorm -- migration:revert -d src/gincana/infrastructure/config/migration.config.ts",
+        "gincana-migration:show": "npm run typeorm -- migration:show -d src/gincana/infrastructure/config/migration.config.ts"
     },
     "author": "",
     "license": "ISC",
@@ -32,6 +35,7 @@
         "dotenv": "16.4.1",
         "express": "5.1.0",
         "jsonwebtoken": "9.0.2",
+        "mercadopago": "^2.12.0",
         "pg": "8.15.6",
         "rxjs": "7.8.2",
         "typeorm": "0.3.23",
