@@ -1,0 +1,44 @@
+name: Deploy to Google VM
+
+on:
+  push:
+    branches:
+      - main  # ou 'master', dependendo do seu repo
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Executing remote ssh commands
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.GCP_HOST }}
+          username: ${{ secrets.GCP_USERNAME }}
+          key: ${{ secrets.GCP_SSH_KEY }}
+          port: 22
+          script: |
+            # Carrega o Bun e NVM se necessário
+            export NVM_DIR=~/.nvm
+            source ~/.nvm/nvm.sh
+            export PATH=$PATH:/home/${{ secrets.GCP_USERNAME }}/.bun/bin
+
+            # Entra na pasta (AJUSTE O NOME DA PASTA AQUI)
+            cd thalles-api
+
+            # Atualiza o código
+            git fetch --all
+            git reset --hard origin/main
+
+            # Instala dependências novas (se houver)
+            bun install
+
+            # Roda as migrações
+            bun run trophies-migration:run
+            bun run gincana-migration:run
+
+            # Reinicia a aplicação no PM2
+            # O flag --update-env garante que se você mudou o .env, o PM2 recarregue ele
+            pm2 restart thalles-api --update-env
+            
+            # Salva a lista de processos (para se a VM reiniciar)
+            pm2 save
