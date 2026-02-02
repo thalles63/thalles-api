@@ -105,4 +105,8 @@ export class GameSaveRequestDto {
     @IsOptional()
     @IsInt()
     itadId: string;
+
+    @IsOptional()
+    @IsString()
+    comments: string;
 }

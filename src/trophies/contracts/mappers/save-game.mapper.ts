@@ -33,6 +33,7 @@ export const SaveGameMapper = async (
         mainExtrasTime: requestGame.mainExtrasTime,
         mainStoryTime: requestGame.mainStoryTime,
         itadId: requestGame.itadId,
+        comments: requestGame.comments,
         lastTimePlayed:
             requestGame.status === StatusEnum.Completed || requestGame.status === StatusEnum.Playing
                 ? mostRecentAchievementDate || requestGame.lastTimePlayed

@@ -35,6 +35,7 @@ export const FindByIdGameMapper = (game: Game) => {
         currentPrice: game.currentPrice,
         isPriceAllTimeLow: game.isPriceAllTimeLow,
         isPriceOneYearTimeLow: game.isPriceOneYearTimeLow,
-        urlToBuy: game.urlToBuy
+        urlToBuy: game.urlToBuy,
+        comments: game.comments
     };
 };

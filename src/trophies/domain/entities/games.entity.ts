@@ -87,6 +87,9 @@ export class Game {
     @Column({ nullable: true })
     urlToBuy: string;
 
+    @Column({ nullable: true })
+    comments: string;
+
     @OneToMany(() => (require("./achievements.entity") as typeof import("./achievements.entity")).Achievement, (achievement) => achievement.game)
     achievements: Achievement[];
 
