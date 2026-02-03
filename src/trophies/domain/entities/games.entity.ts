@@ -16,6 +16,9 @@ export class Game {
     description: string;
 
     @Column({ nullable: true })
+    description_ptbr: string;
+
+    @Column({ nullable: true })
     image: string;
 
     @Column({ nullable: true })

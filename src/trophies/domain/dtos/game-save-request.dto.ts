@@ -23,6 +23,10 @@ export class GameSaveRequestDto {
 
     @IsOptional()
     @IsString()
+    description_ptbr: string;
+
+    @IsOptional()
+    @IsString()
     image: string;
 
     @IsOptional()

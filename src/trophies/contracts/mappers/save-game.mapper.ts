@@ -14,6 +14,7 @@ export const SaveGameMapper = async (
 ) => {
     const requestGameTransformed = {
         description: requestGame.description,
+        description_ptbr: requestGame.description_ptbr,
         developer: requestGame.developer,
         genres: await getGenres(requestGame.genres, genreRepository),
         image: requestGame.image,

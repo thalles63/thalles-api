@@ -11,11 +11,14 @@ jobs:
     steps:
       - name: Executing remote ssh commands
         uses: appleboy/ssh-action@v1.0.3
+        env:
+          TARGET_ENV: ${{ secrets.ENV }}
         with:
           host: ${{ secrets.GCP_HOST }}
           username: ${{ secrets.GCP_USERNAME }}
           key: ${{ secrets.GCP_SSH_KEY }}
           port: 22
+          envs: TARGET_ENV
           script: |
             # Carrega o Bun e NVM se necessário
             export NVM_DIR=~/.nvm
@@ -28,6 +31,8 @@ jobs:
             # Atualiza o código
             git fetch --all
             git reset --hard origin/main
+
+            echo "$TARGET_ENV" > .env
 
             # Instala dependências novas (se houver)
             bun install

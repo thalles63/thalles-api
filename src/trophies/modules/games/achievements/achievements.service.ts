@@ -21,6 +21,15 @@ export class AchievementsService {
         private readonly retroAchievementsService: RetroAchievementsService
     ) {}
 
+    public async listFromGame(gameId: string) {
+        try {
+            const achievements = await this.achievementRepository.findBy({ gameId });
+            return achievements;
+        } catch (error) {
+            throw new BadRequestException(`Failed to load achievements: ${error instanceof Error ? error.message : "Unknown error"}`);
+        }
+    }
+
     public async edit(id: string, achievementData: AchievementSaveRequestDto, gameId: string) {
         try {
             const dbAchievement = await this.achievementRepository.findOneBy({ id });

@@ -4,6 +4,7 @@ import { In, Raw, Repository, SelectQueryBuilder } from "typeorm";
 import { OrmConnectionEnum } from "../../../shared/enum/orm-connection.enum";
 import { ListGameMapper } from "../../contracts/mappers/list-game.mapper";
 import { SaveGameMapper } from "../../contracts/mappers/save-game.mapper";
+import { AchievementSaveRequestDto } from "../../domain/dtos/achievement-save-request.dto";
 import { GameListFiltersDto } from "../../domain/dtos/game-list-filters.dto";
 import type { GameSaveRequestDto } from "../../domain/dtos/game-save-request.dto";
 import type { Achievement } from "../../domain/entities/achievements.entity";
@@ -14,6 +15,7 @@ import { Theme } from "../../domain/entities/theme.entity";
 import { StatusEnum } from "../../domain/enums/status.enum";
 import { GameSort } from "../../domain/sorts/game.sort";
 import { AchievementsService } from "./achievements/achievements.service";
+import { TranslationService } from "./external-services/translation.service";
 
 @Injectable()
 export class GamesService {
@@ -22,7 +24,8 @@ export class GamesService {
         @InjectRepository(Theme, OrmConnectionEnum.Trophies) private readonly themeRepository: Repository<Theme>,
         @InjectRepository(Genre, OrmConnectionEnum.Trophies) private readonly genreRepository: Repository<Genre>,
         @InjectRepository(BacklogSchedule, OrmConnectionEnum.Trophies) private readonly backlogScheduleRepository: Repository<BacklogSchedule>,
-        private readonly achievementsService: AchievementsService
+        private readonly achievementsService: AchievementsService,
+        private readonly translationService: TranslationService
     ) {}
 
     public async list(filters: GameListFiltersDto) {
@@ -67,11 +70,11 @@ export class GamesService {
                 throw new BadRequestException("Missing required field: name");
             }
 
-            const newGame = await this.gameRepository.save(
-                this.gameRepository.create(await SaveGameMapper(<Game>{}, gameRequest, this.genreRepository, this.themeRepository))
-            );
+            const gameToSave = this.gameRepository.create(await SaveGameMapper(<Game>{}, gameRequest, this.genreRepository, this.themeRepository));
+            const gamesaved = await this.gameRepository.save(gameToSave);
 
-            return newGame;
+            await this.translateGameInfos(gamesaved);
+            return gamesaved;
         } catch (error) {
             throw new BadRequestException(`Failed to save game: ${error instanceof Error ? error.message : "Unknown error"}`);
         }
@@ -86,9 +89,11 @@ export class GamesService {
             }
 
             const mostRecentAchievement: Achievement = await this.achievementsService.findMostRecentAchievedByGame(id);
-            const gameToSave = await SaveGameMapper(game, gameData, this.genreRepository, this.themeRepository, mostRecentAchievement.dateAchieved);
+            let gameToSave = await SaveGameMapper(game, gameData, this.genreRepository, this.themeRepository, mostRecentAchievement.dateAchieved);
 
-            await this.gameRepository.save(gameToSave);
+            const gamesaved = await this.gameRepository.save(gameToSave);
+
+            await this.translateGameInfos(gamesaved);
 
             if (gameToSave.status === StatusEnum.Completed) {
                 await this.tryToRemoveGameFromBacklogSchedule(gameToSave.id);
@@ -213,5 +218,42 @@ export class GamesService {
         }
 
         return await this.backlogScheduleRepository.delete({ gameId: gameId });
+    }
+
+    private async translateGameInfos(gameToSave: Game) {
+        const achievements = await this.achievementsService.listFromGame(gameToSave.id);
+        const achievementsNotTranslated = achievements.filter((a) => !a.description_ptbr);
+
+        if (!gameToSave.description_ptbr && achievementsNotTranslated.length) {
+            const infoTranslated = await this.translationService.translateGameAndAchievementsData(gameToSave.description, achievementsNotTranslated);
+
+            if (infoTranslated) {
+                gameToSave.description_ptbr = infoTranslated.summary;
+                await this.gameRepository.save(gameToSave);
+
+                achievementsNotTranslated.forEach(async (a) => {
+                    const ach = infoTranslated.achievements.find((translatedAchievement: Achievement) => translatedAchievement.id === a.id);
+                    await this.achievementsService.edit(a.id, <AchievementSaveRequestDto>{ description_ptbr: ach.description }, gameToSave.id);
+                });
+            }
+        } else if (!gameToSave.description_ptbr) {
+            const infoTranslated = await this.translationService.translateGameData(gameToSave.description);
+
+            if (infoTranslated) {
+                gameToSave.description_ptbr = infoTranslated.summary;
+                await this.gameRepository.save(gameToSave);
+            }
+        } else if (achievementsNotTranslated.length) {
+            const infoTranslated = await this.translationService.translateAchievementsData(achievementsNotTranslated);
+
+            if (infoTranslated) {
+                achievementsNotTranslated.forEach(async (a) => {
+                    const ach = infoTranslated.achievements.find((translatedAchievement: Achievement) => translatedAchievement.id === a.id);
+                    await this.achievementsService.edit(a.id, <AchievementSaveRequestDto>{ description_ptbr: ach.description }, gameToSave.id);
+                });
+            }
+        }
+
+        return gameToSave;
     }
 }

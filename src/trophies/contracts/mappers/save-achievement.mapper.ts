@@ -5,6 +5,7 @@ export const SaveAchievementMapper = (achievement: Achievement, requestAchieveme
     const requestAchievementTransformed = {
         gameId: gameId,
         description: requestAchievement.description,
+        description_ptbr: requestAchievement.description_ptbr,
         image: requestAchievement.image,
         name: requestAchievement.name,
         type: requestAchievement.type ?? "0",

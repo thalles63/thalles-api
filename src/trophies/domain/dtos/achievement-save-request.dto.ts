@@ -16,6 +16,10 @@ export class AchievementSaveRequestDto {
 
     @IsOptional()
     @IsString()
+    description_ptbr?: string;
+
+    @IsOptional()
+    @IsString()
     type?: string;
 
     @IsOptional()

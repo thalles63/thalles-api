@@ -13,6 +13,7 @@ import { ItadService } from "./external-services/itad.service";
 import { PsnProfilesService } from "./external-services/psn-profiles.service";
 import { RetroAchievementsService } from "./external-services/retro-achievements.service";
 import { SteamService } from "./external-services/steam.service";
+import { TranslationService } from "./external-services/translation.service";
 import { GamesController } from "./games.controller";
 import { GamesService } from "./games.service";
 
@@ -23,6 +24,6 @@ import { GamesService } from "./games.service";
         HttpModule
     ],
     controllers: [GamesController],
-    providers: [GamesService, IgdbService, SteamService, PsnProfilesService, RetroAchievementsService, ItadService]
+    providers: [GamesService, IgdbService, SteamService, PsnProfilesService, RetroAchievementsService, ItadService, TranslationService]
 })
 export class GamesModule {}

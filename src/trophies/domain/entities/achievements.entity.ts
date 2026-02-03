@@ -13,6 +13,9 @@ export class Achievement {
     description: string;
 
     @Column({ nullable: true })
+    description_ptbr: string;
+
+    @Column({ nullable: true })
     type?: string;
 
     @Column({ nullable: true })

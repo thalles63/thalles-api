@@ -10,6 +10,7 @@ export const FindByIdGameMapper = (game: Game) => {
             return a;
         }),
         description: game.description,
+        description_ptbr: game.description_ptbr,
         developer: game.developer,
         genres: game.genres,
         id: game.id,

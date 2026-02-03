@@ -26,6 +26,9 @@ export const TrophiesConfig = {
     },
     logging: {
         level: process.env.LOG_LEVEL ?? "info"
+    },
+    gemini: {
+        apiKey: process.env.GEMINI_API_KEY
     }
 } as const;
 

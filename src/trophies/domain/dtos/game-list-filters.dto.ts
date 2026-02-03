@@ -1,5 +1,5 @@
 import { Type } from "class-transformer";
-import { IsArray, IsBoolean, IsEnum, IsInt, IsNumber, IsOptional, IsString, Min } from "class-validator";
+import { IsBoolean, IsEnum, IsInt, IsNumber, IsOptional, IsString, Min } from "class-validator";
 import { GameSort } from "../sorts/game.sort";
 
 export class GameListFiltersDto {
@@ -31,7 +31,6 @@ export class GameListFiltersDto {
     name: string;
 
     @IsOptional()
-    @IsArray()
     @Type(() => Number)
     @IsInt({ each: true })
     platform: number[];
