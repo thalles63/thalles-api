@@ -17,9 +17,9 @@ export class BacklogScheduleService {
     public async allCompleteFromYear(year: number) {
         const query = this.gameRepository
             .createQueryBuilder("games")
-            .addSelect("games.id, games.name, games.isCampaignComplete, games.lastTimePlayed, games.image, games.timePlayed")
+            .addSelect("games.id, games.name, games.lastTimePlayed, games.image, games.timePlayed")
             .addSelect("EXTRACT(MONTH FROM games.lastTimePlayed)", "month")
-            .where("games.isCampaignComplete = :isCampaignComplete", { isCampaignComplete: true })
+            .where("games.status = :statusComplete", { statusComplete: StatusEnum.Completed })
             .andWhere("EXTRACT(YEAR FROM games.lastTimePlayed) = :year", { year });
 
         return await query.getRawMany();

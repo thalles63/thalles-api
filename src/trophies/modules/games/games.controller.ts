@@ -7,6 +7,7 @@ import { AuthGuard } from "../../infrastructure/guards/auth.guard";
 import { IgdbService } from "./external-services/igdb.service";
 import { ItadService } from "./external-services/itad.service";
 import { PsnProfilesService } from "./external-services/psn-profiles.service";
+import { RawgService } from "./external-services/rawg.service";
 import { RetroAchievementsService } from "./external-services/retro-achievements.service";
 import { SteamService } from "./external-services/steam.service";
 import { GamesService } from "./games.service";
@@ -19,7 +20,8 @@ export class GamesController {
         private readonly steamService: SteamService,
         private readonly psnProfilesService: PsnProfilesService,
         private readonly retroAchievementsService: RetroAchievementsService,
-        private readonly itadService: ItadService
+        private readonly itadService: ItadService,
+        private readonly rawgService: RawgService
     ) {}
 
     @Post("list")
@@ -87,6 +89,14 @@ export class GamesController {
         return games;
     }
 
+    @Get("getSteamImage")
+    @UseGuards(AuthGuard)
+    public async getSteamImage(@Query("gameSteamId") gameSteamId: string) {
+        const image = await this.steamService.getSteamImage(gameSteamId);
+
+        return { image };
+    }
+
     @Get("searchPsnProfiles")
     @UseGuards(AuthGuard)
     public async searchPsnProfiles(@Query("gameName") gameName: string) {
@@ -115,6 +125,18 @@ export class GamesController {
     @UseGuards(AuthGuard)
     public async searchItad(@Query("gameName") gameName: string) {
         const games = await this.itadService.searchGameByName(gameName);
+
+        if (!games?.length) {
+            throw new NotFoundException(`No games found with this name`);
+        }
+
+        return games;
+    }
+
+    @Get("searchRawg")
+    @UseGuards(AuthGuard)
+    public async searchRawg(@Query("gameName") gameName: string) {
+        const games = await this.rawgService.searchGameByName(gameName);
 
         if (!games?.length) {
             throw new NotFoundException(`No games found with this name`);
@@ -166,6 +188,14 @@ export class GamesController {
         return gameSaved;
     }
 
+    @Put(":id/translate")
+    @UseGuards(AuthGuard)
+    public async translate(@Param("id") id: string) {
+        const updatedGame = await this.gamesService.translate(id);
+
+        return updatedGame;
+    }
+
     @Put(":id")
     @UseGuards(AuthGuard)
     public async edit(@Param("id") id: string, @Body() gameRequest: GameSaveRequestDto) {
@@ -177,7 +207,7 @@ export class GamesController {
     @Delete(":id")
     @UseGuards(AuthGuard)
     public async delete(@Param("id") id: string) {
-        await this.gamesService.softDelete(id);
+        await this.gamesService.delete(id);
 
         return true;
     }

@@ -11,6 +11,7 @@ import { AchievementsModule } from "./achievements/achievements.module";
 import { IgdbService } from "./external-services/igdb.service";
 import { ItadService } from "./external-services/itad.service";
 import { PsnProfilesService } from "./external-services/psn-profiles.service";
+import { RawgService } from "./external-services/rawg.service";
 import { RetroAchievementsService } from "./external-services/retro-achievements.service";
 import { SteamService } from "./external-services/steam.service";
 import { TranslationService } from "./external-services/translation.service";
@@ -24,6 +25,6 @@ import { GamesService } from "./games.service";
         HttpModule
     ],
     controllers: [GamesController],
-    providers: [GamesService, IgdbService, SteamService, PsnProfilesService, RetroAchievementsService, ItadService, TranslationService]
+    providers: [GamesService, IgdbService, SteamService, PsnProfilesService, RetroAchievementsService, ItadService, TranslationService, RawgService]
 })
 export class GamesModule {}

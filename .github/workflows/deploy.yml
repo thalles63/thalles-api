@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main  # ou 'master', dependendo do seu repo
+  workflow_dispatch:     # permite rodar manualmente
 
 jobs:
   deploy:

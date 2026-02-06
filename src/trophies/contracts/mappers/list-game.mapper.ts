@@ -7,6 +7,9 @@ export const ListGameMapper = (games: Game[], total: any) => {
         const gameMapped = {
             id: game.id,
             image: game.image,
+            imageSteam: game.imageSteam,
+            imageRawg: game.imageRawg,
+            homeCoverType: game.homeCoverType,
             name: game.name,
             platform: game.platform,
             lastTimePlayed: game.lastTimePlayed,

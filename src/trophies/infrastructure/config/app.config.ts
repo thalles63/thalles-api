@@ -29,6 +29,9 @@ export const TrophiesConfig = {
     },
     gemini: {
         apiKey: process.env.GEMINI_API_KEY
+    },
+    rawg: {
+        apiKey: process.env.RAWG_API_KEY
     }
 } as const;
 

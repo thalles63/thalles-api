@@ -72,4 +72,19 @@ export class SteamService {
             throw new Error("Failed to fetch achievements from Steam");
         }
     }
+
+    async getSteamImage(steamId: string) {
+        try {
+            const gameInfo: any = await axios.get(`https://store.steampowered.com/api/appdetails?appids=${steamId}`);
+
+            if (!gameInfo.data[steamId]) {
+                return "";
+            }
+
+            return gameInfo.data[steamId].data.header_image;
+        } catch (error: any) {
+            console.error("Failed to fetch game name from Steam:", error);
+            throw new Error("Failed to fetch game name from Steam");
+        }
+    }
 }

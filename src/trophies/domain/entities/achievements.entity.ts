@@ -33,7 +33,10 @@ export class Achievement {
     @Column()
     gameId: string;
 
-    @ManyToOne(() => (require("./games.entity") as typeof import("./games.entity")).Game, (game) => game.achievements)
+    @ManyToOne(() => (require("./games.entity") as typeof import("./games.entity")).Game, (game) => game.achievements, {
+        onDelete: "CASCADE",
+        orphanedRowAction: "delete"
+    })
     @JoinColumn({ name: "gameId" })
     game: Game;
 }

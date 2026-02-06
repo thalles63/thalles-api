@@ -71,10 +71,8 @@ export class GamesService {
             }
 
             const gameToSave = this.gameRepository.create(await SaveGameMapper(<Game>{}, gameRequest, this.genreRepository, this.themeRepository));
-            const gamesaved = await this.gameRepository.save(gameToSave);
 
-            await this.translateGameInfos(gamesaved);
-            return gamesaved;
+            return await this.gameRepository.save(gameToSave);
         } catch (error) {
             throw new BadRequestException(`Failed to save game: ${error instanceof Error ? error.message : "Unknown error"}`);
         }
@@ -93,19 +91,57 @@ export class GamesService {
 
             const gamesaved = await this.gameRepository.save(gameToSave);
 
-            await this.translateGameInfos(gamesaved);
-
             if (gameToSave.status === StatusEnum.Completed) {
                 await this.tryToRemoveGameFromBacklogSchedule(gameToSave.id);
             }
 
-            return gameToSave;
+            return gamesaved;
         } catch (error) {
             throw new BadRequestException(`Failed to edit game: ${error instanceof Error ? error.message : "Unknown error"}`);
         }
     }
 
-    public async softDelete(id: string) {
+    public async translate(gameId: string) {
+        const gameToSave = (await this.gameRepository.findOneBy({ id: gameId }))!;
+        const achievements = await this.achievementsService.listFromGame(gameId);
+        const achievementsNotTranslated = achievements.filter((a) => !a.description_ptbr);
+
+        if (!gameToSave.description_ptbr && achievementsNotTranslated.length) {
+            const infoTranslated = await this.translationService.translateGameAndAchievementsData(gameToSave.description, achievementsNotTranslated);
+
+            if (infoTranslated) {
+                gameToSave.description_ptbr = infoTranslated.summary;
+                await this.gameRepository.save(gameToSave);
+
+                achievementsNotTranslated.forEach(async (a) => {
+                    const ach = infoTranslated.achievements.find((translatedAchievement: Achievement) => translatedAchievement.id === a.id);
+                    await this.achievementsService.edit(a.id, <AchievementSaveRequestDto>{ description_ptbr: ach.description }, gameToSave.id);
+                });
+            }
+        } else if (!gameToSave.description_ptbr) {
+            const infoTranslated = await this.translationService.translateGameData(gameToSave.description);
+
+            if (infoTranslated) {
+                gameToSave.description_ptbr = infoTranslated.summary;
+                await this.gameRepository.save(gameToSave);
+            }
+        } else if (achievementsNotTranslated.length) {
+            const infoTranslated = await this.translationService.translateAchievementsData(achievementsNotTranslated);
+
+            if (infoTranslated) {
+                achievementsNotTranslated.forEach(async (a) => {
+                    const ach = infoTranslated.achievements.find((translatedAchievement: Achievement) => translatedAchievement.id === a.id);
+                    await this.achievementsService.edit(a.id, <AchievementSaveRequestDto>{ description_ptbr: ach.description }, gameToSave.id);
+                });
+            }
+        }
+
+        gameToSave.achievements = await this.achievementsService.listFromGame(gameToSave.id);
+
+        return gameToSave;
+    }
+
+    public async delete(id: string) {
         try {
             const game = await this.gameRepository.findOneBy({ id });
 
@@ -113,7 +149,7 @@ export class GamesService {
                 throw new NotFoundException("Game not found");
             }
 
-            await this.gameRepository.softDelete(id);
+            await this.gameRepository.delete(id);
 
             return true;
         } catch (error) {
@@ -150,10 +186,6 @@ export class GamesService {
             query.andWhere({ platform: In(filters.platform) });
         }
 
-        if (filters.isCampaignComplete !== undefined) {
-            query.andWhere("games.isCampaignComplete = :isCampaignComplete", { isCampaignComplete: filters.isCampaignComplete });
-        }
-
         if (filters.isPlatinumed !== undefined) {
             query.andWhere("games.isPlatinumed = :isPlatinumed", { isPlatinumed: filters.isPlatinumed });
         }
@@ -172,7 +204,7 @@ export class GamesService {
         if (filters.completionYear) {
             query
                 .andWhere("EXTRACT(YEAR FROM games.lastTimePlayed) = :year", { year: filters.completionYear })
-                .andWhere("games.isCampaignComplete = :isCampaignComplete", { isCampaignComplete: true });
+                .andWhere("games.status = :statusComplete", { statusComplete: StatusEnum.Completed });
         }
 
         if (filters.genre) {
@@ -218,42 +250,5 @@ export class GamesService {
         }
 
         return await this.backlogScheduleRepository.delete({ gameId: gameId });
-    }
-
-    private async translateGameInfos(gameToSave: Game) {
-        const achievements = await this.achievementsService.listFromGame(gameToSave.id);
-        const achievementsNotTranslated = achievements.filter((a) => !a.description_ptbr);
-
-        if (!gameToSave.description_ptbr && achievementsNotTranslated.length) {
-            const infoTranslated = await this.translationService.translateGameAndAchievementsData(gameToSave.description, achievementsNotTranslated);
-
-            if (infoTranslated) {
-                gameToSave.description_ptbr = infoTranslated.summary;
-                await this.gameRepository.save(gameToSave);
-
-                achievementsNotTranslated.forEach(async (a) => {
-                    const ach = infoTranslated.achievements.find((translatedAchievement: Achievement) => translatedAchievement.id === a.id);
-                    await this.achievementsService.edit(a.id, <AchievementSaveRequestDto>{ description_ptbr: ach.description }, gameToSave.id);
-                });
-            }
-        } else if (!gameToSave.description_ptbr) {
-            const infoTranslated = await this.translationService.translateGameData(gameToSave.description);
-
-            if (infoTranslated) {
-                gameToSave.description_ptbr = infoTranslated.summary;
-                await this.gameRepository.save(gameToSave);
-            }
-        } else if (achievementsNotTranslated.length) {
-            const infoTranslated = await this.translationService.translateAchievementsData(achievementsNotTranslated);
-
-            if (infoTranslated) {
-                achievementsNotTranslated.forEach(async (a) => {
-                    const ach = infoTranslated.achievements.find((translatedAchievement: Achievement) => translatedAchievement.id === a.id);
-                    await this.achievementsService.edit(a.id, <AchievementSaveRequestDto>{ description_ptbr: ach.description }, gameToSave.id);
-                });
-            }
-        }
-
-        return gameToSave;
     }
 }

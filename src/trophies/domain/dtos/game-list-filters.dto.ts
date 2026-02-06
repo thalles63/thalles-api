@@ -37,10 +37,6 @@ export class GameListFiltersDto {
 
     @IsOptional()
     @IsBoolean()
-    isCampaignComplete: boolean;
-
-    @IsOptional()
-    @IsBoolean()
     isPlatinumed: boolean;
 
     @IsOptional()

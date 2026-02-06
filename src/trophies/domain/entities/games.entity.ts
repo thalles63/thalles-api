@@ -1,4 +1,4 @@
-import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinTable, ManyToMany, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, JoinTable, ManyToMany, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { StatusEnum } from "../enums/status.enum";
 import type { Achievement } from "./achievements.entity";
 import type { Genre } from "./genre.entity";
@@ -24,8 +24,14 @@ export class Game {
     @Column({ nullable: true })
     screenshots: string;
 
+    @Column({ default: 1 })
+    homeCoverType: number;
+
     @Column({ nullable: true })
-    banner: string;
+    imageSteam: string;
+
+    @Column({ nullable: true })
+    imageRawg: string;
 
     @Column({ nullable: true })
     platform: number;
@@ -48,9 +54,6 @@ export class Game {
     @Column({ default: false })
     isPlatinumed: boolean;
 
-    @Column({ default: false })
-    isCampaignComplete: boolean;
-
     @Column({ nullable: true })
     dateCompleted: Date;
 
@@ -69,7 +72,7 @@ export class Game {
     @Column({ nullable: true })
     mainStoryTime?: number;
 
-    @Column({ unique: true, nullable: true })
+    @Column({ nullable: true })
     itadId: string;
 
     @Column({ type: "decimal", precision: 10, scale: 2, nullable: true })
@@ -111,9 +114,6 @@ export class Game {
         inverseJoinColumn: { name: "themeId", referencedColumnName: "id" }
     })
     themes: Theme[];
-
-    @DeleteDateColumn()
-    deletedAt: Date;
 
     @CreateDateColumn()
     createdAt: Date;

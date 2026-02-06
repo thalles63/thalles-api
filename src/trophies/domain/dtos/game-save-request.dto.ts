@@ -19,6 +19,14 @@ export class GameSaveRequestDto {
 
     @IsOptional()
     @IsString()
+    imageSteam: string;
+
+    @IsOptional()
+    @IsString()
+    imageRawg: string;
+
+    @IsOptional()
+    @IsString()
     description: string;
 
     @IsOptional()
@@ -30,18 +38,17 @@ export class GameSaveRequestDto {
     image: string;
 
     @IsOptional()
-    @IsArray()
-    @IsString({ each: true })
-    screenshots: string[];
+    @IsInt()
+    homeCoverType: number;
 
     @IsOptional()
     @IsArray()
     @IsString({ each: true })
-    banner: string[];
+    screenshots: string[];
 
     @IsNumber()
     @Min(0)
-    @Max(5.0)
+    @Max(5)
     rating: number;
 
     @IsOptional()
@@ -54,9 +61,6 @@ export class GameSaveRequestDto {
 
     @IsBoolean()
     isPlatinumed: boolean;
-
-    @IsBoolean()
-    isCampaignComplete: boolean;
 
     @IsInt()
     status: number;
