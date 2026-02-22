@@ -1,4 +1,5 @@
 export enum OrmConnectionEnum {
     Trophies = "TROPHIES",
-    Gincana = "GINCANA"
+    Gincana = "GINCANA",
+    Financeiro = "FINANCEIRO"
 }

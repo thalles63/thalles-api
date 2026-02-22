@@ -41,6 +41,7 @@ jobs:
             # Roda as migrações
             bun run trophies-migration:run
             bun run gincana-migration:run
+            bun run financeiro-migration:run
 
             # Reinicia a aplicação no PM2
             # O flag --update-env garante que se você mudou o .env, o PM2 recarregue ele

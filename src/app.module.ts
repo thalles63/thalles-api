@@ -1,6 +1,8 @@
 import { Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { ApplicationRoutes } from "./app.routing";
+import { FinanceiroModule } from "./financeiro/financeiro.module";
+import { FinanceiroConfig } from "./financeiro/infrastructure/config/app.config";
 import { GincanaModule } from "./gincana/gincana.module";
 import { GincanaConfig } from "./gincana/infrastructure/config/app.config";
 import { OrmConnectionEnum } from "./shared/enum/orm-connection.enum";
@@ -25,8 +27,17 @@ import { TrophiesModule } from "./trophies/trophies.module";
             synchronize: false,
             ssl: true
         }),
+        TypeOrmModule.forRoot({
+            name: OrmConnectionEnum.Financeiro,
+            type: "postgres",
+            url: FinanceiroConfig.database.dbUrl,
+            entities: ["src/financeiro/domain/entities/**/*.ts"],
+            synchronize: false,
+            ssl: true
+        }),
         TrophiesModule,
         GincanaModule,
+        FinanceiroModule,
         ApplicationRoutes
     ]
 })

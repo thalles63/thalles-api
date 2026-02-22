@@ -14,7 +14,11 @@
         "gincana-migration:generate": "npm run typeorm -- migration:generate -d src/gincana/infrastructure/config/migration.config.ts",
         "gincana-migration:run": "npm run typeorm -- migration:run -d src/gincana/infrastructure/config/migration.config.ts",
         "gincana-migration:revert": "npm run typeorm -- migration:revert -d src/gincana/infrastructure/config/migration.config.ts",
-        "gincana-migration:show": "npm run typeorm -- migration:show -d src/gincana/infrastructure/config/migration.config.ts"
+        "gincana-migration:show": "npm run typeorm -- migration:show -d src/gincana/infrastructure/config/migration.config.ts",
+        "financeiro-migration:generate": "npm run typeorm -- migration:generate -d src/financeiro/infrastructure/config/migration.config.ts",
+        "financeiro-migration:run": "npm run typeorm -- migration:run -d src/financeiro/infrastructure/config/migration.config.ts",
+        "financeiro-migration:revert": "npm run typeorm -- migration:revert -d src/financeiro/infrastructure/config/migration.config.ts",
+        "financeiro-migration:show": "npm run typeorm -- migration:show -d src/financeiro/infrastructure/config/migration.config.ts"
     },
     "author": "",
     "license": "ISC",
@@ -35,6 +39,7 @@
         "class-validator": "^0.14.3",
         "dotenv": "16.4.1",
         "express": "5.1.0",
+        "google-auth-library": "^10.5.0",
         "jsonwebtoken": "9.0.2",
         "mercadopago": "^2.12.0",
         "pg": "8.15.6",
