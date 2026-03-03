@@ -239,6 +239,10 @@ export class GamesService {
                 query.addOrderBy("games.isPriceOneYearTimeLow", "DESC");
                 query.addOrderBy("games.currentPrice", "ASC");
             }
+
+            if (filters.sort === GameSort.TimePlayed) {
+                query.orderBy("games.timePlayed", "DESC");
+            }
         }
     }
 
