@@ -1,13 +1,19 @@
-import { Body, Controller, HttpCode, Post, Query } from "@nestjs/common";
+import { Body, Controller, Get, HttpCode, Param, Post, Query } from "@nestjs/common";
 import { PagamentoService } from "./pagamento.service";
+import { WhatsappService } from "./whatsapp.service";
 
 @Controller("pagamento")
 export class PagamentoController {
-    constructor(private readonly paymentService: PagamentoService) {}
+    constructor(private readonly paymentService: PagamentoService, private readonly whatsappService: WhatsappService) {}
 
     @Post("create")
     async create(@Body() body: any) {
-        return this.paymentService.createCheckout(body.idInscricao);
+        return this.paymentService.createCheckout(body.idInscricao, body.metodo, body.cupomCodigo);
+    }
+
+    @Get("status/:inscricaoId")
+    async status(@Param("inscricaoId") inscricaoId: string) {
+        return this.paymentService.getStatus(inscricaoId);
     }
 
     @Post("webhook")
@@ -16,12 +22,16 @@ export class PagamentoController {
         const id = query["data.id"] || query.id || body?.data?.id;
         const topic = query.type || body?.type;
 
-        console.log(id);
-        console.log(topic);
         if (id) {
             this.paymentService.handleWebhook(id, topic);
         }
 
+        return { status: "OK" };
+    }
+
+    @Get("test-whatsapp")
+    async testWhatsapp(@Body() body: any) {
+        await this.whatsappService.sendLink("5554991811871", "1");
         return { status: "OK" };
     }
 }

@@ -8,6 +8,7 @@ export interface InscricaoFindByIdResponseDto {
     ehPatrocinada: boolean;
     anoEdicao: number;
     valor: number;
+    valorPix: number;
     participantePrincipal: ParticipanteFindByIdResponseDto;
     outrosParticipantes: ParticipanteFindByIdResponseDto[];
 }

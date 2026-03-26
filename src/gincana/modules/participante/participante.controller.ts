@@ -9,4 +9,9 @@ export class ParticipanteController {
     async findByCpf(@Param("cpf") cpf: string) {
         return this.participanteService.findByCpf(cpf);
     }
+
+    @Get(":cpf/status")
+    async findStatusByCpf(@Param("cpf") cpf: string) {
+        return this.participanteService.findStatusByCpf(cpf);
+    }
 }

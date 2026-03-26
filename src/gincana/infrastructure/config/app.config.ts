@@ -14,9 +14,8 @@ export const GincanaConfig = {
         apiKey: process.env.EVOLUTION_API_KEY,
         instanceName: process.env.EVOLUTION_API_INSTANCE
     },
-    frontend: {
-        url: process.env.FRONTEND_URL
-    }
+    frontend_url: process.env.FRONTEND_URL,
+    env: process.env.NODE_ENV
 } as const;
 
 export type Config = typeof GincanaConfig;

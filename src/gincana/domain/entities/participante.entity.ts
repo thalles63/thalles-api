@@ -24,6 +24,12 @@ export class Participante {
     @UpdateDateColumn()
     updatedAt: Date;
 
+    @Column({ default: false })
+    isPatrocinador: boolean;
+
+    @Column({ nullable: true })
+    cupomUsado?: string;
+
     @Column({ nullable: true })
     inscricaoId?: string;
 

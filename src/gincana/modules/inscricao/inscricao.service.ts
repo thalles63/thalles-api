@@ -8,7 +8,7 @@ import { InscricaoSaveRequestDto } from "../../domain/dtos/inscricao/saveRequest
 import { InscricaoParticipante } from "../../domain/entities/inscricao-participante.entity";
 import { Inscricao } from "../../domain/entities/inscricao.entity";
 import { Participante } from "../../domain/entities/participante.entity";
-import { ValorInscricaoEnum } from "../../domain/enums/valorInscricao.enum";
+import { ValoresInscricao } from "../../domain/enums/valorInscricao.enum";
 
 @Injectable()
 export class InscricaoService {
@@ -71,13 +71,13 @@ export class InscricaoService {
                 await this.participanteRepo.save(participanteSalvo);
             }
 
-            const valor = this.calculaValorDoParticipante(participanteSalvo);
+            const precos = this.calculaValorDoParticipante(participanteSalvo);
 
             const ip = this.ipRepo.create({
                 inscricaoId: inscricao.id,
                 participanteId: participanteSalvo.cpf,
                 tipo: participante.tipo,
-                valor,
+                valor: precos.cartao,
                 tamanhoCamiseta: participante.tamanhoCamiseta
             });
 
@@ -101,13 +101,13 @@ export class InscricaoService {
         }
 
         if (idade > 12) {
-            return ValorInscricaoEnum.Adulto;
+            return ValoresInscricao.Adulto;
         }
 
         if (idade > 5) {
-            return ValorInscricaoEnum.Adolescente;
+            return ValoresInscricao.Adolescente;
         }
 
-        return ValorInscricaoEnum.Crianca;
+        return ValoresInscricao.Crianca;
     }
 }

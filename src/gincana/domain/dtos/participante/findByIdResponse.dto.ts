@@ -6,4 +6,5 @@ export interface ParticipanteFindByIdResponseDto {
     telefone: string;
     tamanhoCamiseta?: number;
     valor?: number;
+    valorPix?: number;
 }

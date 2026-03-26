@@ -17,7 +17,7 @@ export class InscricaoParticipante {
     @Column()
     inscricaoId: string;
 
-    @Column()
+    @Column({ type: "decimal", precision: 10, scale: 2, transformer: { to: (v: number) => v, from: (v: string) => parseFloat(v) } })
     valor: number;
 
     @Column()

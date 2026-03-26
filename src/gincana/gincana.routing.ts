@@ -2,6 +2,7 @@ import { GincanaModule } from "./gincana.module";
 import { InscricaoModule } from "./modules/inscricao/inscricao.module";
 import { PagamentoModule } from "./modules/pagamento/pagamento.module";
 import { ParticipanteModule } from "./modules/participante/participante.module";
+import { CupomModule } from "./modules/cupom/cupom.module";
 
 export const GincanaRouting = {
     path: "api/gincana",
@@ -18,6 +19,10 @@ export const GincanaRouting = {
         {
             path: "/",
             module: PagamentoModule
+        },
+        {
+            path: "/",
+            module: CupomModule
         }
     ]
 };
