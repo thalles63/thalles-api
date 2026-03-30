@@ -31,7 +31,7 @@ export class PagamentoController {
 
     @Get("test-whatsapp")
     async testWhatsapp(@Body() body: any) {
-        await this.whatsappService.sendLink("5554991811871", "1");
+        await this.whatsappService.sendLink("5554991811871", "1", "Teste", 1);
         return { status: "OK" };
     }
 }

@@ -1,5 +1,5 @@
 export const ValoresInscricao = {
-    Adulto: { cartao: 1.10, pix: 0.90 },
-    Adolescente: { cartao: 0.75, pix: 0.65 },
-    Crianca: { cartao: 0.40, pix: 0.30 }
+    Adulto: { cartao: 115, pix: 110 },
+    Adolescente: { cartao: 80, pix: 75 },
+    Crianca: { cartao: 45, pix: 40 }
 } as const;

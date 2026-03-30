@@ -1,5 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
+import crypto from "crypto";
 import { Repository } from "typeorm";
 import { OrmConnectionEnum } from "../../../shared/enum/orm-connection.enum";
 import { InscricaoFindByIdResponseMapper } from "../../contracts/mappers/inscricao/findById.mapper";
@@ -8,7 +9,9 @@ import { InscricaoSaveRequestDto } from "../../domain/dtos/inscricao/saveRequest
 import { InscricaoParticipante } from "../../domain/entities/inscricao-participante.entity";
 import { Inscricao } from "../../domain/entities/inscricao.entity";
 import { Participante } from "../../domain/entities/participante.entity";
+import { TipoParticipante } from "../../domain/enums/tipoParticipante.enum";
 import { ValoresInscricao } from "../../domain/enums/valorInscricao.enum";
+import { GincanaConfig } from "../../infrastructure/config/app.config";
 
 @Injectable()
 export class InscricaoService {
@@ -59,6 +62,42 @@ export class InscricaoService {
         return InscricaoFindByIdResponseMapper(inscricao);
     }
 
+    async validarQrcode(inscricaoId: string, token: string): Promise<any | null> {
+        if (!token) return null;
+
+        const expectedToken = crypto.createHmac("sha256", GincanaConfig.qrcodeHmacSecret).update(inscricaoId).digest("hex");
+
+        const tokenBuffer = Buffer.from(token, "hex");
+        const expectedBuffer = Buffer.from(expectedToken, "hex");
+
+        if (tokenBuffer.length !== expectedBuffer.length || !crypto.timingSafeEqual(tokenBuffer, expectedBuffer)) {
+            return null;
+        }
+
+        const inscricao = await this.inscricaoRepo.findOne({
+            where: { id: inscricaoId },
+            relations: ["participantes", "participantes.participante"]
+        });
+
+        if (!inscricao) return null;
+
+        const principal = inscricao.participantes.find((ip) => ip.tipo === TipoParticipante.Principal);
+
+        return {
+            id: inscricao.id,
+            nome: principal?.participante?.nome ?? "",
+            qtdParticipantes: inscricao.participantes.length,
+            pago: !!inscricao.dataPagamento,
+            dataPagamento: inscricao.dataPagamento,
+            dataRetiradaCamiseta: inscricao.dataRetiradaCamiseta,
+            participantes: inscricao.participantes.map((ip) => ({
+                nome: ip.participante.nome,
+                tamanhoCamiseta: ip.tamanhoCamiseta,
+                tipo: ip.tipo
+            }))
+        };
+    }
+
     async create(dto: InscricaoSaveRequestDto) {
         const inscricao = this.inscricaoRepo.create({ anoEdicao: dto.anoEdicao, ehPatrocinada: dto.ehPatrocinada, dataInscricao: new Date() });
         await this.inscricaoRepo.save(inscricao);
@@ -68,8 +107,10 @@ export class InscricaoService {
 
             if (!participanteSalvo) {
                 participanteSalvo = this.participanteRepo.create(participante);
-                await this.participanteRepo.save(participanteSalvo);
+            } else {
+                Object.assign(participanteSalvo, participante);
             }
+            await this.participanteRepo.save(participanteSalvo);
 
             const precos = this.calculaValorDoParticipante(participanteSalvo);
 
@@ -100,7 +141,7 @@ export class InscricaoService {
             idade--;
         }
 
-        if (idade > 12) {
+        if (idade > 10) {
             return ValoresInscricao.Adulto;
         }
 

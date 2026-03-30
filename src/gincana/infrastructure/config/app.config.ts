@@ -15,7 +15,8 @@ export const GincanaConfig = {
         instanceName: process.env.EVOLUTION_API_INSTANCE
     },
     frontend_url: process.env.FRONTEND_URL,
-    env: process.env.NODE_ENV
+    env: process.env.NODE_ENV,
+    qrcodeHmacSecret: process.env.QRCODE_HMAC_SECRET ?? "default-gincana-secret-change-me"
 } as const;
 
 export type Config = typeof GincanaConfig;

@@ -96,7 +96,7 @@ export class PagamentoService {
 
             const principalIp = inscricao.participantes.find((ip) => ip.tipo === TipoParticipante.Principal);
             const participantePrincipal = principalIp?.participante ?? <Participante>{};
-            await this.whatsappService.sendLink("55" + participantePrincipal.telefone, inscricao.id);
+            await this.whatsappService.sendLink("55" + participantePrincipal.telefone, inscricao.id, participantePrincipal.nome ?? "", inscricao.participantes.length);
 
             return { tipo: "free" };
         }
@@ -215,7 +215,7 @@ export class PagamentoService {
 
                 const participantePrincipal = inscricao.participantes.find((p) => p.tipo === TipoParticipante.Principal)?.participante ?? <Participante>{};
 
-                await this.whatsappService.sendLink("55" + participantePrincipal.telefone, inscricao.id);
+                await this.whatsappService.sendLink("55" + participantePrincipal.telefone, inscricao.id, participantePrincipal.nome ?? "", inscricao.participantes.length);
             }
         }
     }
