@@ -18,9 +18,9 @@ export class BacklogScheduleService {
         const query = this.gameRepository
             .createQueryBuilder("games")
             .addSelect("games.id, games.name, games.lastTimePlayed, games.image, games.timePlayed")
-            .addSelect("EXTRACT(MONTH FROM games.lastTimePlayed)", "month")
+            .addSelect("EXTRACT(MONTH FROM (games.lastTimePlayed - INTERVAL '3 hours'))", "month")
             .where("games.status = :statusComplete", { statusComplete: StatusEnum.Completed })
-            .andWhere("EXTRACT(YEAR FROM games.lastTimePlayed) = :year", { year });
+            .andWhere("EXTRACT(YEAR FROM (games.lastTimePlayed - INTERVAL '3 hours')) = :year", { year });
 
         return await query.getRawMany();
     }
