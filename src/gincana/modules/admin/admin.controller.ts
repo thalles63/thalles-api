@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Put, Query, UseGuards } from "@nestjs/common";
+import { Controller, Get, Param, Post, Put, Query, UseGuards } from "@nestjs/common";
 import { AdminService } from "./admin.service";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 import { RolesGuard } from "../auth/guards/roles.guard";
@@ -15,18 +15,26 @@ export class AdminController {
         @Query("anoEdicao") anoEdicao?: string,
         @Query("page") page?: string,
         @Query("pageSize") pageSize?: string,
-        @Query("statusPagamento") statusPagamento?: string
+        @Query("statusPagamento") statusPagamento?: string,
+        @Query("incluirPatrocinadas") incluirPatrocinadas?: string
     ) {
         return this.adminService.listarInscricoes(
             anoEdicao ? Number(anoEdicao) : undefined,
             page ? Number(page) : 1,
             pageSize ? Number(pageSize) : 20,
-            statusPagamento
+            statusPagamento,
+            incluirPatrocinadas === "true"
         );
     }
 
     @Put("inscricoes/:id/baixar")
     async confirmarRetirada(@Param("id") id: string) {
         return this.adminService.confirmarRetirada(id);
+    }
+
+    @Roles("admin")
+    @Post("inscricoes/:id/reenviar-whatsapp")
+    async reenviarWhatsapp(@Param("id") id: string) {
+        return this.adminService.reenviarWhatsapp(id);
     }
 }

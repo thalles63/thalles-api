@@ -4,14 +4,16 @@ import { Repository } from "typeorm";
 import { OrmConnectionEnum } from "../../../shared/enum/orm-connection.enum";
 import { Inscricao } from "../../domain/entities/inscricao.entity";
 import { TipoParticipante } from "../../domain/enums/tipoParticipante.enum";
+import { WhatsappService } from "../pagamento/whatsapp.service";
 
 @Injectable()
 export class AdminService {
     constructor(
-        @InjectRepository(Inscricao, OrmConnectionEnum.Gincana) private readonly inscricaoRepo: Repository<Inscricao>
+        @InjectRepository(Inscricao, OrmConnectionEnum.Gincana) private readonly inscricaoRepo: Repository<Inscricao>,
+        private readonly whatsappService: WhatsappService
     ) {}
 
-    async listarInscricoes(anoEdicao?: number, page: number = 1, pageSize: number = 20, statusPagamento?: string) {
+    async listarInscricoes(anoEdicao?: number, page: number = 1, pageSize: number = 20, statusPagamento?: string, incluirPatrocinadas: boolean = false) {
         const query = this.inscricaoRepo
             .createQueryBuilder("inscricao")
             .leftJoinAndSelect("inscricao.participantes", "ip")
@@ -20,6 +22,10 @@ export class AdminService {
 
         if (anoEdicao) {
             query.andWhere("inscricao.anoEdicao = :anoEdicao", { anoEdicao });
+        }
+
+        if (!incluirPatrocinadas) {
+            query.andWhere("inscricao.ehPatrocinada = false");
         }
 
         if (statusPagamento === "pago") {
@@ -58,6 +64,34 @@ export class AdminService {
         const data = mapped.slice(start, start + pageSize);
 
         return { data, total, page, pageSize, sumVagas, sumValorPix };
+    }
+
+    async reenviarWhatsapp(id: string) {
+        const inscricao = await this.inscricaoRepo
+            .createQueryBuilder("inscricao")
+            .leftJoinAndSelect("inscricao.participantes", "ip")
+            .leftJoinAndSelect("ip.participante", "p")
+            .where("inscricao.id = :id", { id })
+            .getOne();
+
+        if (!inscricao) {
+            throw new NotFoundException("Inscrição não encontrada.");
+        }
+
+        const principal = inscricao.participantes.find(p => p.tipo === TipoParticipante.Principal);
+
+        if (!principal?.participante) {
+            throw new NotFoundException("Participante principal não encontrado.");
+        }
+
+        await this.whatsappService.sendLink(
+            "55" + principal.participante.telefone,
+            inscricao.id,
+            principal.participante.nome ?? "",
+            inscricao.participantes.length
+        );
+
+        return { message: "WhatsApp reenviado com sucesso." };
     }
 
     async confirmarRetirada(id: string) {
