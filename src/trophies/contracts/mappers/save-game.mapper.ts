@@ -1,5 +1,6 @@
 import { In, Repository } from "typeorm";
 import { GameSaveRequestDto } from "../../domain/dtos/game-save-request.dto";
+import { Franchise } from "../../domain/entities/franchise.entity";
 import { Game } from "../../domain/entities/games.entity";
 import { Genre } from "../../domain/entities/genre.entity";
 import { Theme } from "../../domain/entities/theme.entity";
@@ -10,6 +11,7 @@ export const SaveGameMapper = async (
     requestGame: GameSaveRequestDto,
     genreRepository: Repository<Genre>,
     themeRepository: Repository<Theme>,
+    franchiseRepository: Repository<Franchise>,
     mostRecentAchievementDate?: Date
 ) => {
     const requestGameTransformed = {
@@ -27,6 +29,7 @@ export const SaveGameMapper = async (
         releaseDate: requestGame.releaseDate,
         screenshots: requestGame.screenshots ? requestGame.screenshots.join(",") : null,
         themes: await getThemes(requestGame.themes, themeRepository),
+        franchise: await getFranchise(requestGame.franchiseId, franchiseRepository),
         status: requestGame.status,
         timePlayed: requestGame.timePlayed ?? 0,
         isPlatinumed: requestGame.isPlatinumed,
@@ -66,4 +69,11 @@ const getThemes = async (themes: string[], genreRepository: Repository<Theme>) =
     });
 
     return themesFromDb;
+};
+
+const getFranchise = async (franchiseId: string | null | undefined, franchiseRepository: Repository<Franchise>) => {
+    if (!franchiseId) {
+        return null;
+    }
+    return (await franchiseRepository.findOneBy({ id: franchiseId })) ?? null;
 };

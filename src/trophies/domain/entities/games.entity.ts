@@ -1,6 +1,7 @@
-import { Column, CreateDateColumn, Entity, JoinTable, ManyToMany, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { StatusEnum } from "../enums/status.enum";
 import type { Achievement } from "./achievements.entity";
+import type { Franchise } from "./franchise.entity";
 import type { Genre } from "./genre.entity";
 import type { Theme } from "./theme.entity";
 
@@ -114,6 +115,10 @@ export class Game {
         inverseJoinColumn: { name: "themeId", referencedColumnName: "id" }
     })
     themes: Theme[];
+
+    @ManyToOne(() => (require("./franchise.entity") as typeof import("./franchise.entity")).Franchise, (franchise) => franchise.games, { nullable: true, onDelete: "SET NULL" })
+    @JoinColumn({ name: "franchiseId" })
+    franchise: Franchise | null;
 
     @CreateDateColumn()
     createdAt: Date;

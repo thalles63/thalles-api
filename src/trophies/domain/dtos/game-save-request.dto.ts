@@ -117,4 +117,8 @@ export class GameSaveRequestDto {
     @IsOptional()
     @IsString()
     comments: string;
+
+    @IsOptional()
+    @IsUUID()
+    franchiseId: string | null;
 }

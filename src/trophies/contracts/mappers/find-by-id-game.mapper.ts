@@ -39,6 +39,22 @@ export const FindByIdGameMapper = (game: Game) => {
         isPriceAllTimeLow: game.isPriceAllTimeLow,
         isPriceOneYearTimeLow: game.isPriceOneYearTimeLow,
         urlToBuy: game.urlToBuy,
-        comments: game.comments
+        comments: game.comments,
+        franchise: game.franchise
+            ? {
+                  id: game.franchise.id,
+                  name: game.franchise.name,
+                  games:
+                      game.franchise.games
+                          ?.filter((g) => g.id !== game.id)
+                          .sort((a, b) => {
+                              if (!a.releaseDate && !b.releaseDate) return 0;
+                              if (!a.releaseDate) return 1;
+                              if (!b.releaseDate) return -1;
+                              return new Date(a.releaseDate).getTime() - new Date(b.releaseDate).getTime();
+                          })
+                          .map((g) => ({ id: g.id, name: g.name, image: g.image, status: g.status, releaseDate: g.releaseDate })) ?? []
+              }
+            : null
     };
 };

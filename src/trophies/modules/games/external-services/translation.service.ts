@@ -5,7 +5,6 @@ import { TrophiesConfig } from "../../../infrastructure/config/app.config";
 
 @Injectable()
 export class TranslationService {
-    private readonly genAI: GoogleGenerativeAI;
     private readonly model: any;
 
     constructor() {
@@ -15,122 +14,99 @@ export class TranslationService {
             throw new Error("GEMINI_API_KEY não configurada no .env");
         }
 
-        this.genAI = new GoogleGenerativeAI(apiKey);
-        this.model = this.genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+        const genAI = new GoogleGenerativeAI(apiKey);
+        this.model = genAI.getGenerativeModel({ model: "gemini-3.1-flash-lite-preview" }, { apiVersion: "v1beta" });
     }
 
-    async translateGameAndAchievementsData(summaryEn: string, achievements: Achievement[]) {
+    private readonly generationConfig = {
+        temperature: 0.1,
+        responseMimeType: "application/json"
+    };
+
+    async translateGameAndAchievementsData(summaryEn: string, achievements: Achievement[], gameName: string) {
         const inputPayload = {
             summary: summaryEn,
-            achievements: achievements.map((a) => ({
-                id: a.id,
-                description: a.description
-            }))
+            achievements: achievements.map((a) => ({ id: a.id, description: a.description }))
         };
 
         const prompt = `
-            Você é um tradutor especializado em localização de videogames (PT-BR).
-            Receba o JSON abaixo contendo o resumo de um jogo e suas conquistas (achievements).
+            Você é um tradutor especializado em localização de videogames para PT-BR.
 
-            Tarefas:
-            1. Traduza o "summary" para um tom natural.
-            2. Traduza o "description" de cada achievement.
-            3. Mantenha termos técnicos em inglês (Headshot, Killstreak, RPG, etc).
-            4. Mantenha a estrutura do JSON idêntica, apenas traduza os valores.
+            Regras:
+            - Traduza com naturalidade, como uma localização oficial brasileira
+            - Mantenha a estrutura JSON idêntica — apenas traduza os valores de texto
+            - NÃO altere os campos "id"
+            - O jogo que você irá traduzir se chama: ${gameName} use nomenclaturas e expressões que façam sentido para esse jogo
 
-            Entrada JSON:
+            Traduza o JSON abaixo:
             ${JSON.stringify(inputPayload)}
-
-            IMPORTANTE: Retorne APENAS o JSON puro. NÃO use blocos de código markdown (\`\`\`).
         `;
 
         try {
-            const result = await this.model.generateContent(prompt);
-            const responseText = result.response.text();
-            const cleanedText = responseText
-                .replace(/```json/g, "")
-                .replace(/```/g, "")
-                .trim();
-            const translatedData = JSON.parse(cleanedText);
-
-            return translatedData;
+            const result = await this.model.generateContent({
+                contents: [{ role: "user", parts: [{ text: prompt }] }],
+                generationConfig: this.generationConfig
+            });
+            return JSON.parse(result.response.text());
         } catch (error) {
-            console.error("Erro na tradução em lote:", error);
+            console.error("Erro na tradução (game + achievements):", error);
             return null;
         }
     }
 
-    async translateGameData(summaryEn: string) {
-        const inputPayload = {
-            summary: summaryEn
-        };
+    async translateGameData(summaryEn: string, gameName: string) {
+        const inputPayload = { summary: summaryEn };
 
         const prompt = `
-            Você é um tradutor especializado em localização de videogames (PT-BR).
-            Receba o JSON abaixo contendo o resumo de um jogo.
+            Você é um tradutor especializado em localização de videogames para PT-BR.
 
-            Tarefas:
-            1. Traduza o "summary" para um tom natural.
-            2. Mantenha termos técnicos em inglês (Headshot, Killstreak, RPG, etc).
-            3. Mantenha a estrutura do JSON idêntica, apenas traduza os valores.
+            Regras:
+            - Traduza com naturalidade, como uma localização oficial brasileira
+            - Mantenha a estrutura JSON idêntica — apenas traduza os valores de texto
+            - O jogo que você irá traduzir se chama: ${gameName} use nomenclaturas e expressões que façam sentido para esse jogo
 
-            Entrada JSON:
+            Traduza o JSON abaixo:
             ${JSON.stringify(inputPayload)}
-
-            IMPORTANTE: Retorne APENAS o JSON puro. NÃO use blocos de código markdown (\`\`\`).
         `;
 
         try {
-            const result = await this.model.generateContent(prompt);
-            const responseText = result.response.text();
-            const cleanedText = responseText
-                .replace(/```json/g, "")
-                .replace(/```/g, "")
-                .trim();
-            const translatedData = JSON.parse(cleanedText);
-
-            return translatedData;
+            const result = await this.model.generateContent({
+                contents: [{ role: "user", parts: [{ text: prompt }] }],
+                generationConfig: this.generationConfig
+            });
+            return JSON.parse(result.response.text());
         } catch (error) {
-            console.error("Erro na tradução em lote:", error);
+            console.error("Erro na tradução (game):", error);
             return null;
         }
     }
 
-    async translateAchievementsData(achievements: Achievement[]) {
+    async translateAchievementsData(achievements: Achievement[], gameName: string) {
         const inputPayload = {
-            achievements: achievements.map((a) => ({
-                id: a.id,
-                description: a.description
-            }))
+            achievements: achievements.map((a) => ({ id: a.id, description: a.description }))
         };
 
         const prompt = `
-            Você é um tradutor especializado em localização de videogames (PT-BR).
-            Receba o JSON abaixo contendo as conquistas do jogo (achievements).
+            Você é um tradutor especializado em localização de videogames para PT-BR.
 
-            Tarefas:
-            1. Traduza o "description" de cada achievement.
-            2. Mantenha termos técnicos em inglês (Headshot, Killstreak, RPG, etc).
-            3. Mantenha a estrutura do JSON idêntica, apenas traduza os valores.
+            Regras:
+            - Traduza as descrições das conquistas com naturalidade
+            - Mantenha a estrutura JSON idêntica — apenas traduza os valores de texto
+            - NÃO altere os campos "id"
+            - O jogo que você irá traduzir se chama: ${gameName} use nomenclaturas e expressões que façam sentido para esse jogo
 
-            Entrada JSON:
+            Traduza o JSON abaixo:
             ${JSON.stringify(inputPayload)}
-
-            IMPORTANTE: Retorne APENAS o JSON puro. NÃO use blocos de código markdown (\`\`\`).
         `;
 
         try {
-            const result = await this.model.generateContent(prompt);
-            const responseText = result.response.text();
-            const cleanedText = responseText
-                .replace(/```json/g, "")
-                .replace(/```/g, "")
-                .trim();
-            const translatedData = JSON.parse(cleanedText);
-
-            return translatedData;
+            const result = await this.model.generateContent({
+                contents: [{ role: "user", parts: [{ text: prompt }] }],
+                generationConfig: this.generationConfig
+            });
+            return JSON.parse(result.response.text());
         } catch (error) {
-            console.error("Erro na tradução em lote:", error);
+            console.error("Erro na tradução (achievements):", error);
             return null;
         }
     }

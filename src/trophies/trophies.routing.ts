@@ -1,5 +1,6 @@
 import { AuthModule } from "./modules/auth/auth.module";
 import { BacklogScheduleModule } from "./modules/backlog-schedule/backlog-schedule.module";
+import { FranchisesModule } from "./modules/franchises/franchises.module";
 import { AchievementsModule } from "./modules/games/achievements/achievements.module";
 import { GamesModule } from "./modules/games/games.module";
 import { PingModule } from "./modules/ping/ping.module";
@@ -28,6 +29,10 @@ export const TrophiesRouting = {
         {
             path: "/",
             module: BacklogScheduleModule
+        },
+        {
+            path: "/",
+            module: FranchisesModule
         }
     ]
 };
