@@ -3,8 +3,8 @@ name: Deploy to Google VM
 on:
   push:
     branches:
-      - main  # ou 'master', dependendo do seu repo
-  workflow_dispatch:     # permite rodar manualmente
+      - main
+  workflow_dispatch:
 
 jobs:
   deploy:
@@ -21,13 +21,14 @@ jobs:
           port: 22
           envs: TARGET_ENV
           script: |
-            # Carrega o Bun e NVM se necessário
             export NVM_DIR=~/.nvm
             source ~/.nvm/nvm.sh
             export PATH=$PATH:/home/${{ secrets.GCP_USERNAME }}/.bun/bin
 
-            # Entra na pasta (AJUSTE O NOME DA PASTA AQUI)
             cd thalles-api
+
+            # Salva o commit atual antes de atualizar
+            BEFORE=$(git rev-parse HEAD)
 
             # Atualiza o código
             git fetch --all
@@ -38,14 +39,30 @@ jobs:
             # Instala dependências novas (se houver)
             bun install
 
-            # Roda as migrações
-            bun run trophies-migration:run
-            bun run gincana-migration:run
-            bun run financeiro-migration:run
+            # Roda migrations apenas das APIs que tiveram arquivos novos
+            if git diff --name-only "$BEFORE" HEAD -- src/trophies/infrastructure/migrations/ | grep -q .; then
+              echo "Rodando migrations Trophies..."
+              bun run trophies-migration:run
+            else
+              echo "Sem migrations novas para Trophies, pulando."
+            fi
+
+            if git diff --name-only "$BEFORE" HEAD -- src/gincana/infrastructure/migrations/ | grep -q .; then
+              echo "Rodando migrations Gincana..."
+              bun run gincana-migration:run
+            else
+              echo "Sem migrations novas para Gincana, pulando."
+            fi
+
+            if git diff --name-only "$BEFORE" HEAD -- src/financeiro/infrastructure/migrations/ | grep -q .; then
+              echo "Rodando migrations Financeiro..."
+              bun run financeiro-migration:run
+            else
+              echo "Sem migrations novas para Financeiro, pulando."
+            fi
 
             # Reinicia a aplicação no PM2
-            # O flag --update-env garante que se você mudou o .env, o PM2 recarregue ele
             pm2 restart thalles-api --update-env
-            
+
             # Salva a lista de processos (para se a VM reiniciar)
             pm2 save
