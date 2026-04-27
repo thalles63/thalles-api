@@ -5,16 +5,16 @@ import { InscricaoService } from "./inscricao.service";
 export class InscricaoController {
     constructor(private readonly inscricaoService: InscricaoService) {}
 
+    @Get("config")
+    async getConfig() {
+        return this.inscricaoService.getConfig();
+    }
+
     @Get("qrcode/validar/:id")
     async validarQrcode(@Param("id") id: string, @Query("token") token: string) {
         const resultado = await this.inscricaoService.validarQrcode(id, token);
 
         return resultado;
-    }
-
-    @Get(":cpf")
-    async findByCpf(@Param("cpf") cpf: string) {
-        return this.inscricaoService.findByCpf(cpf);
     }
 
     @Get("id/:id")
@@ -25,5 +25,10 @@ export class InscricaoController {
     @Post()
     async create(@Body() dto: any) {
         return this.inscricaoService.create(dto);
+    }
+
+    @Get(":cpf")
+    async findByCpf(@Param("cpf") cpf: string) {
+        return this.inscricaoService.findByCpf(cpf);
     }
 }

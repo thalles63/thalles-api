@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Post, Put, Query, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, Param, Patch, Post, Put, Query, UseGuards } from "@nestjs/common";
 import { AdminService } from "./admin.service";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 import { RolesGuard } from "../auth/guards/roles.guard";
@@ -30,6 +30,12 @@ export class AdminController {
     @Put("inscricoes/:id/baixar")
     async confirmarRetirada(@Param("id") id: string) {
         return this.adminService.confirmarRetirada(id);
+    }
+
+    @Roles("admin")
+    @Patch("config")
+    async atualizarConfig(@Body() body: { inscricoesEncerradas: boolean }) {
+        return this.adminService.atualizarConfig(body.inscricoesEncerradas);
     }
 
     @Roles("admin")

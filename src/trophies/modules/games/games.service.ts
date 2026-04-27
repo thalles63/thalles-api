@@ -192,7 +192,7 @@ export class GamesService {
         }
 
         if (filters.name) {
-            query.andWhere({ name: Raw((alias) => `LOWER(${alias}) Like '%${filters.name}%'`) });
+            query.andWhere({ name: Raw((alias) => `LOWER(${alias}) Like '%${filters.name.toLowerCase()}%'`) });
         }
 
         if (filters.platform) {

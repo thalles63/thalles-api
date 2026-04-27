@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { OrmConnectionEnum } from "../../../shared/enum/orm-connection.enum";
+import { ConfiguracaoGincana } from "../../domain/entities/configuracao-gincana.entity";
 import { Inscricao } from "../../domain/entities/inscricao.entity";
 import { TipoParticipante } from "../../domain/enums/tipoParticipante.enum";
 import { WhatsappService } from "../pagamento/whatsapp.service";
@@ -10,6 +11,7 @@ import { WhatsappService } from "../pagamento/whatsapp.service";
 export class AdminService {
     constructor(
         @InjectRepository(Inscricao, OrmConnectionEnum.Gincana) private readonly inscricaoRepo: Repository<Inscricao>,
+        @InjectRepository(ConfiguracaoGincana, OrmConnectionEnum.Gincana) private readonly configRepo: Repository<ConfiguracaoGincana>,
         private readonly whatsappService: WhatsappService
     ) {}
 
@@ -64,6 +66,11 @@ export class AdminService {
         const data = mapped.slice(start, start + pageSize);
 
         return { data, total, page, pageSize, sumVagas, sumValorPix };
+    }
+
+    async atualizarConfig(inscricoesEncerradas: boolean) {
+        await this.configRepo.upsert({ id: 1, inscricoesEncerradas }, ["id"]);
+        return { inscricoesEncerradas };
     }
 
     async reenviarWhatsapp(id: string) {

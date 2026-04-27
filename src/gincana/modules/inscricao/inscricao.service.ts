@@ -6,6 +6,7 @@ import { OrmConnectionEnum } from "../../../shared/enum/orm-connection.enum";
 import { InscricaoFindByIdResponseMapper } from "../../contracts/mappers/inscricao/findById.mapper";
 import { InscricaoFindByIdResponseDto } from "../../domain/dtos/inscricao/findByIdResponse.dto";
 import { InscricaoSaveRequestDto } from "../../domain/dtos/inscricao/saveRequest.dto";
+import { ConfiguracaoGincana } from "../../domain/entities/configuracao-gincana.entity";
 import { InscricaoParticipante } from "../../domain/entities/inscricao-participante.entity";
 import { Inscricao } from "../../domain/entities/inscricao.entity";
 import { Participante } from "../../domain/entities/participante.entity";
@@ -18,8 +19,14 @@ export class InscricaoService {
     constructor(
         @InjectRepository(Inscricao, OrmConnectionEnum.Gincana) private readonly inscricaoRepo: Repository<Inscricao>,
         @InjectRepository(Participante, OrmConnectionEnum.Gincana) private readonly participanteRepo: Repository<Participante>,
-        @InjectRepository(InscricaoParticipante, OrmConnectionEnum.Gincana) private readonly ipRepo: Repository<InscricaoParticipante>
+        @InjectRepository(InscricaoParticipante, OrmConnectionEnum.Gincana) private readonly ipRepo: Repository<InscricaoParticipante>,
+        @InjectRepository(ConfiguracaoGincana, OrmConnectionEnum.Gincana) private readonly configRepo: Repository<ConfiguracaoGincana>
     ) {}
+
+    async getConfig() {
+        const config = await this.configRepo.findOne({ where: { id: 1 } });
+        return { inscricoesEncerradas: config?.inscricoesEncerradas ?? false };
+    }
 
     async findByCpf(cpf: string) {
         let inscricao = await this.inscricaoRepo
