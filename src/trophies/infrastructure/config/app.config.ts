@@ -32,7 +32,8 @@ export const TrophiesConfig = {
     },
     rawg: {
         apiKey: process.env.RAWG_API_KEY
-    }
+    },
+    frontend_url: process.env.TROPHIES_FRONTEND_URL
 } as const;
 
 export type Config = typeof TrophiesConfig;
