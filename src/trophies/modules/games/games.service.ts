@@ -1,4 +1,5 @@
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
+import { EventEmitter2 } from "@nestjs/event-emitter";
 import { InjectRepository } from "@nestjs/typeorm";
 import { In, Raw, Repository, SelectQueryBuilder } from "typeorm";
 import { OrmConnectionEnum } from "../../../shared/enum/orm-connection.enum";
@@ -15,6 +16,8 @@ import { Genre } from "../../domain/entities/genre.entity";
 import { Theme } from "../../domain/entities/theme.entity";
 import { StatusEnum } from "../../domain/enums/status.enum";
 import { GameSort } from "../../domain/sorts/game.sort";
+import { CloudinaryService } from "../image/cloudinary.service";
+import { ImageUploadEvent } from "../image/image-upload.listener";
 import { AchievementsService } from "./achievements/achievements.service";
 import { TranslationService } from "./external-services/translation.service";
 
@@ -27,7 +30,9 @@ export class GamesService {
         @InjectRepository(BacklogSchedule, OrmConnectionEnum.Trophies) private readonly backlogScheduleRepository: Repository<BacklogSchedule>,
         @InjectRepository(Franchise, OrmConnectionEnum.Trophies) private readonly franchiseRepository: Repository<Franchise>,
         private readonly achievementsService: AchievementsService,
-        private readonly translationService: TranslationService
+        private readonly translationService: TranslationService,
+        private readonly eventEmitter: EventEmitter2,
+        private readonly cloudinaryService: CloudinaryService
     ) {}
 
     public async list(filters: GameListFiltersDto) {
@@ -78,7 +83,9 @@ export class GamesService {
                 await SaveGameMapper(<Game>{}, gameRequest, this.genreRepository, this.themeRepository, this.franchiseRepository)
             );
 
-            return await this.gameRepository.save(gameToSave);
+            const saved = await this.gameRepository.save(gameToSave);
+            this.emitGameImageEvents(saved.id, gameRequest);
+            return saved;
         } catch (error) {
             throw new BadRequestException(`Failed to save game: ${error instanceof Error ? error.message : "Unknown error"}`);
         }
@@ -108,9 +115,32 @@ export class GamesService {
                 await this.tryToRemoveGameFromBacklogSchedule(gameToSave.id);
             }
 
+            this.emitGameImageEvents(id, gameData);
             return gamesaved;
         } catch (error) {
             throw new BadRequestException(`Failed to edit game: ${error instanceof Error ? error.message : "Unknown error"}`);
+        }
+    }
+
+    private emitGameImageEvents(gameId: string, gameData: GameSaveRequestDto) {
+        const imageFields: Array<{ key: string; url: string | undefined | null }> = [
+            { key: "image", url: gameData.image },
+            { key: "imageSteam", url: gameData.imageSteam },
+            { key: "imageRawg", url: gameData.imageRawg }
+        ];
+
+        for (const { key, url } of imageFields) {
+            if (url && !this.cloudinaryService.isCloudinaryUrl(url)) {
+                this.eventEmitter.emit("image.upload", <ImageUploadEvent>{ entityId: gameId, entityType: "game", imageKey: key, url });
+            }
+        }
+
+        if (gameData.screenshots?.length) {
+            gameData.screenshots.forEach((url, index) => {
+                if (url && !this.cloudinaryService.isCloudinaryUrl(url)) {
+                    this.eventEmitter.emit("image.upload", <ImageUploadEvent>{ entityId: gameId, entityType: "game", imageKey: `screenshot_${index}`, url });
+                }
+            });
         }
     }
 

@@ -3,6 +3,7 @@ import { BacklogScheduleModule } from "./modules/backlog-schedule/backlog-schedu
 import { FranchisesModule } from "./modules/franchises/franchises.module";
 import { AchievementsModule } from "./modules/games/achievements/achievements.module";
 import { GamesModule } from "./modules/games/games.module";
+import { MigrationModule } from "./modules/migration/migration.module";
 import { PingModule } from "./modules/ping/ping.module";
 import { TrophiesModule } from "./trophies.module";
 
@@ -33,6 +34,10 @@ export const TrophiesRouting = {
         {
             path: "/",
             module: FranchisesModule
+        },
+        {
+            path: "/",
+            module: MigrationModule
         }
     ]
 };

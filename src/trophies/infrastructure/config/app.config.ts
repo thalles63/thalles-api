@@ -3,8 +3,14 @@ import dotenv from "dotenv";
 dotenv.config();
 
 export const TrophiesConfig = {
+    nodeEnv: process.env.NODE_ENV ?? "DEV",
     database: {
         url: process.env.TROPHIES_DATABASE_URL
+    },
+    cloudinary: {
+        cloudName: process.env.CLOUDINARY_CLOUD_NAME,
+        apiKey: process.env.CLOUDINARY_API_KEY,
+        apiSecret: process.env.CLOUDINARY_API_SECRET
     },
     steam: {
         apiKey: process.env.STEAM_API_KEY,

@@ -169,6 +169,12 @@ export class GamesController {
         return themes;
     }
 
+    @Get("steamAchievementsPreview")
+    @UseGuards(AuthGuard)
+    public async steamAchievementsPreview(@Query("steamId") steamId: string) {
+        return this.steamService.getListOfAchievements(steamId);
+    }
+
     @Get(":id")
     public async findById(@Param("id") id: string) {
         const game = await this.gamesService.findById(id);

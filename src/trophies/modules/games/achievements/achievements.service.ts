@@ -1,4 +1,5 @@
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
+import { EventEmitter2 } from "@nestjs/event-emitter";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { OrmConnectionEnum } from "../../../../shared/enum/orm-connection.enum";
@@ -7,6 +8,8 @@ import { SaveAchievementMapper } from "../../../contracts/mappers/save-achieveme
 import { AchievementSaveRequestDto } from "../../../domain/dtos/achievement-save-request.dto";
 import { Achievement } from "../../../domain/entities/achievements.entity";
 import { Game } from "../../../domain/entities/games.entity";
+import { CloudinaryService } from "../../image/cloudinary.service";
+import { ImageUploadEvent } from "../../image/image-upload.listener";
 import { PsnProfilesService } from "../external-services/psn-profiles.service";
 import { RetroAchievementsService } from "../external-services/retro-achievements.service";
 import { SteamService } from "../external-services/steam.service";
@@ -18,7 +21,9 @@ export class AchievementsService {
         @InjectRepository(Game, OrmConnectionEnum.Trophies) private readonly gameRepository: Repository<Game>,
         private readonly steamService: SteamService,
         private readonly psnProfilesService: PsnProfilesService,
-        private readonly retroAchievementsService: RetroAchievementsService
+        private readonly retroAchievementsService: RetroAchievementsService,
+        private readonly eventEmitter: EventEmitter2,
+        private readonly cloudinaryService: CloudinaryService
     ) {}
 
     public async listFromGame(gameId: string) {
@@ -50,6 +55,7 @@ export class AchievementsService {
                 await this.gameRepository.update({ id: gameId }, { lastTimePlayed: latest.latest });
             }
 
+            this.emitAchievementImageEvent(id, achievementData.image, gameId);
             return updatedAchievement;
         } catch (error) {
             throw new BadRequestException(`Failed to edit achievement: ${error instanceof Error ? error.message : "Unknown error"}`);
@@ -77,7 +83,9 @@ export class AchievementsService {
                 achievementsList.push(newAchievement);
             }
 
-            return await this.achievementRepository.save(achievementsList);
+            const saved = await this.achievementRepository.save(achievementsList);
+            saved.forEach((a) => this.emitAchievementImageEvent(a.id, a.image, gameId));
+            return saved;
         } catch (error) {
             throw new BadRequestException(`Failed to save achievements: ${error instanceof Error ? error.message : "Unknown error"}`);
         }
@@ -94,7 +102,9 @@ export class AchievementsService {
                 achievementsList.push(newAchievement);
             }
 
-            return await this.achievementRepository.save(achievementsList);
+            const saved = await this.achievementRepository.save(achievementsList);
+            saved.forEach((a) => this.emitAchievementImageEvent(a.id, a.image, gameId));
+            return saved;
         } catch (error) {
             throw new BadRequestException(`Failed to save achievements: ${error instanceof Error ? error.message : "Unknown error"}`);
         }
@@ -111,9 +121,17 @@ export class AchievementsService {
                 achievementsList.push(newAchievement);
             }
 
-            return await this.achievementRepository.save(achievementsList);
+            const saved = await this.achievementRepository.save(achievementsList);
+            saved.forEach((a) => this.emitAchievementImageEvent(a.id, a.image, gameId));
+            return saved;
         } catch (error) {
             throw new BadRequestException(`Failed to save achievements: ${error instanceof Error ? error.message : "Unknown error"}`);
+        }
+    }
+
+    private emitAchievementImageEvent(achievementId: string, url: string | undefined | null, gameId: string) {
+        if (url && !this.cloudinaryService.isCloudinaryUrl(url)) {
+            this.eventEmitter.emit("image.upload", <ImageUploadEvent>{ entityId: achievementId, entityType: "achievement", imageKey: "icon", url, gameId });
         }
     }
 

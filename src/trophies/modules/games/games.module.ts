@@ -8,6 +8,7 @@ import { Game } from "../../domain/entities/games.entity";
 import { Genre } from "../../domain/entities/genre.entity";
 import { RetroAchievementsGames } from "../../domain/entities/retroAchievementsGames.entity";
 import { Theme } from "../../domain/entities/theme.entity";
+import { ImageModule } from "../image/image.module";
 import { AchievementsModule } from "./achievements/achievements.module";
 import { IgdbService } from "./external-services/igdb.service";
 import { ItadService } from "./external-services/itad.service";
@@ -23,9 +24,11 @@ import { GamesService } from "./games.service";
     imports: [
         TypeOrmModule.forFeature([Game, Genre, Theme, RetroAchievementsGames, BacklogSchedule, Franchise], OrmConnectionEnum.Trophies),
         AchievementsModule,
+        ImageModule,
         HttpModule
     ],
     controllers: [GamesController],
-    providers: [GamesService, IgdbService, SteamService, PsnProfilesService, RetroAchievementsService, ItadService, TranslationService, RawgService]
+    providers: [GamesService, IgdbService, SteamService, PsnProfilesService, RetroAchievementsService, ItadService, TranslationService, RawgService],
+    exports: [GamesService]
 })
 export class GamesModule {}
