@@ -73,6 +73,16 @@ export class GamesService {
             .getOne();
     }
 
+    public async getLastTimePlayed(gameId: string) {
+        const game = await this.gameRepository.findOne({ where: { id: gameId }, select: ["lastTimePlayed"] });
+
+        if (!game) {
+            throw new NotFoundException("Game not found");
+        }
+
+        return game.lastTimePlayed;
+    }
+
     public async save(gameRequest: GameSaveRequestDto) {
         try {
             if (!gameRequest.name) {

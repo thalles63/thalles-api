@@ -10,7 +10,7 @@ import { Achievement } from "../../../domain/entities/achievements.entity";
 import { Game } from "../../../domain/entities/games.entity";
 import { CloudinaryService } from "../../image/cloudinary.service";
 import { ImageUploadEvent } from "../../image/image-upload.listener";
-import { PsnProfilesService } from "../external-services/psn-profiles.service";
+import { ExophaseService } from "../external-services/exophase.service";
 import { RetroAchievementsService } from "../external-services/retro-achievements.service";
 import { SteamService } from "../external-services/steam.service";
 
@@ -20,7 +20,7 @@ export class AchievementsService {
         @InjectRepository(Achievement, OrmConnectionEnum.Trophies) private readonly achievementRepository: Repository<Achievement>,
         @InjectRepository(Game, OrmConnectionEnum.Trophies) private readonly gameRepository: Repository<Game>,
         private readonly steamService: SteamService,
-        private readonly psnProfilesService: PsnProfilesService,
+        private readonly exophaseService: ExophaseService,
         private readonly retroAchievementsService: RetroAchievementsService,
         private readonly eventEmitter: EventEmitter2,
         private readonly cloudinaryService: CloudinaryService
@@ -91,12 +91,12 @@ export class AchievementsService {
         }
     }
 
-    async saveFromPsnProfiles(gameId: string, gameUrl: string) {
+    async saveFromExophase(gameId: string, gameUrl: string) {
         try {
-            const psnAchievements = await this.psnProfilesService.getAchievementsFromPsn(gameUrl);
+            const exophaseAchievements = await this.exophaseService.getAchievementsFromExophase(gameUrl);
 
             const achievementsList = [];
-            for (const achievement of psnAchievements!) {
+            for (const achievement of exophaseAchievements) {
                 const newAchievement = this.achievementRepository.create(SaveAchievementMapper(<Achievement>{}, achievement, gameId));
 
                 achievementsList.push(newAchievement);

@@ -1,6 +1,5 @@
-export interface GamePsnProfiles {
+export interface GameExophase {
     name: string;
-    region: string | null;
     image: string;
     platforms: string[];
     url: string;

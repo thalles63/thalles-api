@@ -4,9 +4,9 @@ import { GameListFiltersDto } from "../../domain/dtos/game-list-filters.dto";
 import type { GameSaveRequestDto } from "../../domain/dtos/game-save-request.dto";
 import { StatusEnum } from "../../domain/enums/status.enum";
 import { AuthGuard } from "../../infrastructure/guards/auth.guard";
+import { ExophaseService } from "./external-services/exophase.service";
 import { IgdbService } from "./external-services/igdb.service";
 import { ItadService } from "./external-services/itad.service";
-import { PsnProfilesService } from "./external-services/psn-profiles.service";
 import { RawgService } from "./external-services/rawg.service";
 import { RetroAchievementsService } from "./external-services/retro-achievements.service";
 import { SteamService } from "./external-services/steam.service";
@@ -18,7 +18,7 @@ export class GamesController {
         private readonly gamesService: GamesService,
         private readonly igdbService: IgdbService,
         private readonly steamService: SteamService,
-        private readonly psnProfilesService: PsnProfilesService,
+        private readonly exophaseService: ExophaseService,
         private readonly retroAchievementsService: RetroAchievementsService,
         private readonly itadService: ItadService,
         private readonly rawgService: RawgService
@@ -97,10 +97,10 @@ export class GamesController {
         return { image };
     }
 
-    @Get("searchPsnProfiles")
+    @Get("searchExophase")
     @UseGuards(AuthGuard)
-    public async searchPsnProfiles(@Query("gameName") gameName: string) {
-        const games = await this.psnProfilesService.searchGame(gameName);
+    public async searchExophase(@Query("gameName") gameName: string) {
+        const games = await this.exophaseService.searchGame(gameName);
 
         if (!games?.length) {
             throw new NotFoundException(`No games found with this name`);
@@ -173,6 +173,13 @@ export class GamesController {
     @UseGuards(AuthGuard)
     public async steamAchievementsPreview(@Query("steamId") steamId: string) {
         return this.steamService.getListOfAchievements(steamId);
+    }
+
+    @Get(":id/lastTimePlayed")
+    public async getLastTimePlayed(@Param("id") id: string) {
+        const lastTimePlayed = await this.gamesService.getLastTimePlayed(id);
+
+        return { lastTimePlayed };
     }
 
     @Get(":id")

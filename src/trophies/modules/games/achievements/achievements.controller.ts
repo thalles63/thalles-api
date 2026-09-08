@@ -31,10 +31,10 @@ export class AchievementsController {
         return achievementsSaved;
     }
 
-    @Post("saveFromPsnProfiles")
+    @Post("saveFromExophase")
     @UseGuards(AuthGuard)
-    async saveFromPsnProfiles(@Body() saveFromPsnProfilesParams: { gameUrl: string }, @Param("gameId") gameId: string) {
-        const achievementsSaved = await this.achievementsService.saveFromPsnProfiles(gameId, saveFromPsnProfilesParams.gameUrl);
+    async saveFromExophase(@Body() saveFromExophaseParams: { gameUrl: string }, @Param("gameId") gameId: string) {
+        const achievementsSaved = await this.achievementsService.saveFromExophase(gameId, saveFromExophaseParams.gameUrl);
 
         return achievementsSaved;
     }

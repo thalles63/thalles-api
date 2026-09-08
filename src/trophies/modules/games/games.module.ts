@@ -10,9 +10,9 @@ import { RetroAchievementsGames } from "../../domain/entities/retroAchievementsG
 import { Theme } from "../../domain/entities/theme.entity";
 import { ImageModule } from "../image/image.module";
 import { AchievementsModule } from "./achievements/achievements.module";
+import { ExophaseService } from "./external-services/exophase.service";
 import { IgdbService } from "./external-services/igdb.service";
 import { ItadService } from "./external-services/itad.service";
-import { PsnProfilesService } from "./external-services/psn-profiles.service";
 import { RawgService } from "./external-services/rawg.service";
 import { RetroAchievementsService } from "./external-services/retro-achievements.service";
 import { SteamService } from "./external-services/steam.service";
@@ -28,7 +28,7 @@ import { GamesService } from "./games.service";
         HttpModule
     ],
     controllers: [GamesController],
-    providers: [GamesService, IgdbService, SteamService, PsnProfilesService, RetroAchievementsService, ItadService, TranslationService, RawgService],
+    providers: [GamesService, IgdbService, SteamService, ExophaseService, RetroAchievementsService, ItadService, TranslationService, RawgService],
     exports: [GamesService]
 })
 export class GamesModule {}

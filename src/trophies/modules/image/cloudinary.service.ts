@@ -19,7 +19,6 @@ const BROWSER_HEADERS = {
 };
 
 const REFERER_MAP: Record<string, string> = {
-    "psnprofiles.com": "https://psnprofiles.com/",
     "retroachievements.org": "https://retroachievements.org/"
 };
 
